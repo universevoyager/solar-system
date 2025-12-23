@@ -1,5 +1,4 @@
 # Solar System Unity Web Simulator
-
 A simple, open-source Solar System simulator built in Unity (URP), targeting WebGL.  
 This project is an early prototype and is under active development.
 
@@ -30,8 +29,8 @@ Features, assets, and structure may change frequently.
 - `LICENSE` — MIT license
 
 ## Asset Sources / Credits
-Textures and skybox resources are from NASA/USGS public resources and related outreach assets.  
-See **`Credits.md`** for the complete list of sources and credit lines.
+Textures and skybox resources are primarily from NASA/USGS public resources and related outreach assets.  
+See **`Credits.md`** for the complete list of sources and required credit lines.
 
 Notes:
 - Some planetary textures (especially gas giants and some outer bodies) may be labeled by NASA as **fictional/representative**.
@@ -45,7 +44,7 @@ Third-party assets (textures/models) are attributed in `Credits.md` and remain s
 ## Getting Started (Unity 6000.3+ / URP)
 
 ### Open the project
-1. Install **Unity 6000.3+** (Unity Hub recommended).
+1. Install **Unity 6000.3+** (via Unity Hub is recommended).
 2. Open this repository folder as a Unity project.
 3. Allow Unity to import assets and compile scripts.
 
@@ -65,10 +64,14 @@ Third-party assets (textures/models) are attributed in `Credits.md` and remain s
 - Add additional close-up scenes (Earth–Moon first)
 - WebGL performance pass (texture sizing, LOD, memory)
 
-## Contributing
-Issues and pull requests are welcome.
-- Keep changes small and focused
-- If you add/replace third-party assets, update `Credits.md` with the new source links and required credit lines
+## Contributing / Feedback
+This is an open-source project. At the moment, we are **not accepting code pull requests**.
+
+You can help with:
+- Issues: bug reports, feature requests, scientific corrections, attribution fixes
+- PRs: documentation and `Credits.md` only (no code changes)
+
+Code PRs may be closed without review. If you want to propose a code change, please open an issue first.
 
 ## Disclaimer
-This is a visualization project and not intended for scientific analysis.
+This is a visualization project and not intended for scientific analysis or navigation.
