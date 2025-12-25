@@ -175,6 +175,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 811560714}
+    - target: {fileID: 7632560736620929773, guid: 37f83d5fb4e5d42e684a09cf072fd8ff, type: 3}
+      propertyPath: m_VersionIndex
+      value: 1903
+      objectReference: {fileID: 0}
     - target: {fileID: 8496062687163920938, guid: 37f83d5fb4e5d42e684a09cf072fd8ff, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -2278,8 +2282,8 @@ SceneRoots:
   - {fileID: 359611482}
   - {fileID: 1589307805}
   - {fileID: 129030495}
-  - {fileID: 1862761333}
   - {fileID: 765247568}
+  - {fileID: 1862761333}
   - {fileID: 932039623}
   - {fileID: 425599034}
   - {fileID: 1436745569}

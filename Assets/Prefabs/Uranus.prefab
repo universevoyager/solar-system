@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 1981948514445915798}
   - component: {fileID: 4659217063969671301}
   - component: {fileID: 8940809271512987259}
-  - component: {fileID: -7202385616045420054}
   m_Layer: 0
   m_Name: Uranus
   m_TagString: Untagged
@@ -91,15 +90,3 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &-7202385616045420054
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2496548171079418234}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f352b941030d14e5bbcd4b01a1c27908, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.CelestialBodies.CelestialBody

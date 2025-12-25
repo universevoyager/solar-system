@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 4948090276453300371}
   - component: {fileID: 4958900016361101981}
   - component: {fileID: 178016154936251587}
-  - component: {fileID: -7023862892423714130}
   m_Layer: 0
   m_Name: Deimos
   m_TagString: Untagged
@@ -91,15 +90,3 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &-7023862892423714130
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2333164819689798905}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f352b941030d14e5bbcd4b01a1c27908, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.CelestialBodies.CelestialBody
