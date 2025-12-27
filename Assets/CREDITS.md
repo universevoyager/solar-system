@@ -1,4 +1,59 @@
-# Credits (Third-Party Assets)
+# Credits
+
+This repository includes publicly available textures/models and scientific reference data from NASA/JPL/USGS and related sources.
+
+Where publishers request attribution (e.g., “Please cite authors”), that request is preserved below.
+
+---
+
+## Scientific Data Sources (SolarSystemData.json)
+
+The JSON dataset includes:
+- mean radii (km),
+- sidereal rotation periods,
+- axial tilts,
+- orbital periods,
+- semi-major axes,
+- selected Keplerian orbital elements for a few solar objects to visualize eccentric/tilted orbits.
+
+Primary sources used (trustworthy references):
+
+### Planets (physical + orbital basics)
+- JPL Solar System Dynamics — Planetary Physical Parameters  
+  https://ssd.jpl.nasa.gov/planets/phys_par.html
+
+### Natural satellites (radii, etc.)
+- JPL Solar System Dynamics — Planetary Satellite Physical Parameters  
+  https://ssd.jpl.nasa.gov/sats/phys_par/
+
+### Keplerian elements / small solar objects (Ceres, Eris, etc.)
+- JPL Solar System Dynamics — Small-Body Database Lookup (SBDB)  
+  https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html
+- JPL Solar System Dynamics — Small-Body Element Tables  
+  https://ssd.jpl.nasa.gov/sb/elem_tables.html
+
+### Pluto reference pages (overview + “by the numbers”)
+- NASA Science — Pluto Facts  
+  https://science.nasa.gov/dwarf-planets/pluto/facts/
+- NASA Solar System Exploration — Pluto By the Numbers  
+  https://solarsystem.nasa.gov/pluto-by-the-numbers/
+
+### Astronomical Unit (AU) definition
+- Observatoire de Paris (IAU 2012 B2 summary) — AU definition (exact)  
+  https://observatoiredeparis.psl.eu/the-new-definition-of-the-astronomical-unit.html
+
+> Note on accuracy: This project uses simplified orbit models for visualization. It is not intended for ephemeris-grade computation. For accurate ephemerides, use NASA/JPL Horizons.
+
+---
+
+## AI Assistance / Transparency
+
+Parts of the code structure and initial JSON schema/formatting were developed with assistance from **OpenAI ChatGPT (GPT-5.2 Thinking)**.  
+All outputs were reviewed/modified by the project maintainers before committing.
+
+---
+
+## Third-Party Visual Assets (Textures / Models)
 
 This repository includes publicly available textures/models from NASA and USGS sources.
 Each entry below lists the original source URL(s) and the credit line (when provided by the publisher).
@@ -145,3 +200,18 @@ If you replace any asset, update this file accordingly.
   https://svs.gsfc.nasa.gov/4851/
 - Credit (as listed by publisher): Visualizations by Ernie Wright (NASA Scientific Visualization Studio)
 - Notes: Choose one of the downloadable equirectangular maps on the page (e.g., the “star map” and/or the “Milky Way background” layers) and commit the exact file(s) you use into the repo.
+
+---
+
+## Third-Party Fonts
+
+### Orbitron
+- Name: Orbitron
+- Author: Matt McInerney
+- Copyright: Copyright (c) 2009, Matt McInerney
+- License: SIL Open Font License, Version 1.1 (OFL-1.1)
+- Reserved Font Name: Orbitron
+- Source: Google Fonts — Orbitron
+  https://fonts.google.com/specimen/Orbitron
+- License file: `Assets/TextMesh Pro/Fonts/Orbitron/OFL.txt`
+- Note: The repository is MIT-licensed, but Orbitron font files are **not** covered by MIT; they remain licensed under OFL-1.1.
