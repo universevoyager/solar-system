@@ -20,7 +20,9 @@ Features, assets, and structure may change.
 - **Engine:** Unity **6000.3+**
 - **Render Pipeline:** **URP**
 - **Target:** WebGL (desktop browsers)
+- **WebGL:** WebGL 2.0 minimum
 - **JSON:** Newtonsoft JSON (`com.unity.nuget.newtonsoft-json`)
+- **Camera:** Cinemachine (`com.unity.cinemachine`)
 
 ---
 
@@ -113,7 +115,7 @@ High-level:
   - `Template.prefab` is used as a fallback when an id-matching prefab is missing
 
 Scripts (namespaces follow folder structure, e.g. `Assets.Scripts.Runtime`):
-- `SolarSystemSimulator` — scene entry point; loads JSON, loads prefabs, spawns objects, advances simulation time
+- `SolarSystemSimulator` — scene entry point that loads JSON, loads prefabs, spawns objects, advances simulation time
 - `SolarObject` — per-object behavior: orbit position, spin, and runtime line renderers
 - `SolarSystemJsonLoader` — loads/validates JSON from `Resources`
 
@@ -165,6 +167,7 @@ Add `Gui_RuntimeControlEvents` to the Canvas so slider changes are applied via `
 Text labels (`TextMeshProUGUI`):
 - `TimeScaleValueText`
 - `VisualPresetValueText`
+- `AppVersionText`
 
 Sliders (`UnityEngine.UI.Slider`):
 - `TimeScaleSlider`
@@ -184,7 +187,28 @@ Slider levels (names and values):
 
 Defaults come from `global_visual_defaults` for distance and radius (Normal preset), while Time Scale is set in code.
 Orbit segments are 128 (Normal) and 64 (Minimal), and distance km/unit + moon clearance remain at their default values across presets.
-When Minimal is active, runtime line widths are scaled down by 50%.
+When Minimal is active, runtime line widths are scaled down by 0.25x.
+
+---
+
+## Cinemachine Camera Controls
+This project uses Cinemachine cameras and a runtime GUI grid to focus on solar objects.
+
+Required scene objects (names must match):
+- Focus vcam: `Follow-SolarObject-VCinemachine`
+- Overview vcam: `Overview-SolarSystem-VCinemachine`
+- Grid layout: `SolarObjects_View_Interaction_GridLayoutGroup`
+- Focus button template (inactive): `Focus_SolarObject_VCinemachine_Button`
+- Overview button: `View_SolarSystem_Overview_VCinemachine_Button`
+- Button TMP child name: `Text`
+
+Proxy targets (world-aligned, not parented):
+- `Focus_Proxy`
+- `Overview_Proxy`
+
+Add these components to the scene:
+- `SolarSystemCameraController` (camera logic)
+- `Gui_SolarObjectGrid` (builds focus buttons at runtime)
 
 ---
 
@@ -210,6 +234,21 @@ Global toggles for orbit paths, spin axis, and world-up lines are available in t
 
 ## Known Issues
 - Changing orbit parameters at runtime is not supported, make sure to edit the JSON and restart.
+- Planetary shadows on some moons are missing or inconsistent, they should be occluded at certain angles.
+- Realistic-size presets need a larger camera distance, the current 0.2 to 1.5 range is tuned for the Minimal preset.
+- Maximum time scale (10,000,000x) is too fast and should likely be reduced by 10x.
+- Grid layout buttons can override their borders when sized by layout groups.
+- Moon tidal-locking is correct in motion, but the initial facing direction is not aligned to Earth by default.
+
+---
+
+## Code Guidelines
+- All control statements use `{}` even for single lines, including `if`, `else`, `for`, `foreach`, `while`, and `do`.
+- Local variables and parameters use `_` prefix, while non-local fields/properties do not.
+- Prefer short, clear comments only when the logic is not obvious.
+- Use `HelpLogs` for logs, warnings, and errors.
+- Keep namespaces aligned with folder structure (e.g. `Assets.Scripts.Runtime`).
+- Avoid obsolete APIs and keep code current with the project dependencies.
 
 ---
 
@@ -221,8 +260,8 @@ To add a new object:
    - `primary_id` (e.g. `"sun"` or a planet id for moons)
    - `truth_physical.mean_radius_km`
    - `truth_spin` (rotation period + optional axial tilt)
-   - `truth_orbit` (semi-major axis + orbital period; set `model`)
-3. Add a prefab named the same as `id` in `Assets/Resources/SolarObjects/` (optional; otherwise `Template` is used)
+   - `truth_orbit` (semi-major axis + orbital period, set `model`)
+3. Add a prefab named the same as `id` in `Assets/Resources/SolarObjects/` (optional, otherwise `Template` is used)
 
 ### JSON Examples
 Circular orbit (simple):
@@ -292,8 +331,13 @@ Code PRs may be closed without review. If you want to propose a code change, ple
 
 ## Future Plans
 - Add more interaction
-- Add Cinemachine
 - Improve performance
 - Continuously update with new content and features
+- Add magnetic fields for planets
+- Visualize the Moon's dark side
+- Add gravity and spacetime visuals
+- Add an asteroid belt
+- Enhance lighting
+- Other improvements and refinements
 
 ---

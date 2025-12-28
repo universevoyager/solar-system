@@ -43,6 +43,19 @@ namespace Assets.Scripts.Runtime
         private readonly Dictionary<string, SolarObject> instancesById =
             new(StringComparer.OrdinalIgnoreCase);
 
+        // Spawned solar objects in display order for UI.
+        private readonly List<SolarObject> orderedSolarObjects = new();
+
+        /// <summary>
+        /// Read-only list of spawned solar objects in display order.
+        /// </summary>
+        public IReadOnlyList<SolarObject> OrderedSolarObjects => orderedSolarObjects;
+
+        /// <summary>
+        /// Raised after solar objects are spawned and initialized.
+        /// </summary>
+        public event Action<IReadOnlyList<SolarObject>>? SolarObjectsReady;
+
         // Prefabs found in Resources by name.
         private readonly Dictionary<string, GameObject> prefabsByName =
             new(StringComparer.OrdinalIgnoreCase);
@@ -97,6 +110,7 @@ namespace Assets.Scripts.Runtime
 
             SpawnAll(json_database);
             InitializeAllTwoPass(json_database);
+            SolarObjectsReady?.Invoke(orderedSolarObjects);
 
             HelpLogs.Log("Simulator", $"Ready. Objects spawned: {instancesById.Count}");
         }
@@ -247,6 +261,7 @@ namespace Assets.Scripts.Runtime
         private void SpawnAll(SolarSystemJsonLoader.Result _db)
         {
             instancesById.Clear();
+            orderedSolarObjects.Clear();
 
             List<SolarObjectData> _sorted = new List<SolarObjectData>(_db.ById.Values);
             _sorted.Sort((_a, _b) =>
@@ -284,6 +299,7 @@ namespace Assets.Scripts.Runtime
                 }
 
                 instancesById[_data.Id] = _solarObject;
+                orderedSolarObjects.Add(_solarObject);
             }
         }
 

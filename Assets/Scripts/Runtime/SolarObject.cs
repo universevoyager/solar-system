@@ -101,6 +101,11 @@ namespace Assets.Scripts.Runtime
 
         #region Public API
         /// <summary>
+        /// Dataset id for this solar object.
+        /// </summary>
+        public string Id => id;
+
+        /// <summary>
         /// Initialize from dataset and shared visual context.
         /// </summary>
         public void Initialize(SolarObjectData _data, Transform? _primaryTransform, VisualContext _visualContext)
