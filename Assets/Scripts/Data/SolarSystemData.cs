@@ -13,7 +13,7 @@ namespace Assets.Scripts.Data
     {
         // Raw metadata block from the dataset.
         [JsonProperty("meta")]
-        public object? Meta { get; set; }
+        public MetaData? Meta { get; set; }
 
         // Shared visual defaults for all objects.
         [JsonProperty("global_visual_defaults")]

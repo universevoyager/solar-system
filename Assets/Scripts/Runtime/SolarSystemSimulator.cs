@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using Assets.Scripts.Data;
 using Assets.Scripts.Loading;
 using Assets.Scripts.Guis;
@@ -24,12 +25,20 @@ namespace Assets.Scripts.Runtime
         [SerializeField] private string prefabsResourcesFolder = "SolarObjects";
 
         [Header("Runtime Controls")]
-        [Tooltip("Enable runtime UI sliders and value labels for live tuning.")]
+        [Tooltip("Enable runtime UI buttons and value labels for live tuning.")]
         [SerializeField] private bool enableRuntimeControls = true;
 
         [Header("Time")]
         // Simulation speed multiplier (sim seconds per real second).
         private float timeScale = 1.0f;
+
+        [Header("Sun Light Presets")]
+        // Normal visual preset values for the Sun point light.
+        [SerializeField] private float sunLightNormalIntensity = 30000.0f;
+        [SerializeField] private float sunLightNormalRange = 1000.0f;
+        // Minimal visual preset values for the Sun point light.
+        [SerializeField] private float sunLightMinimalIntensity = 15.0f;
+        [SerializeField] private float sunLightMinimalRange = 1000.0f;
 
         #endregion
 
@@ -56,32 +65,49 @@ namespace Assets.Scripts.Runtime
         /// </summary>
         public event Action<IReadOnlyList<SolarObject>>? SolarObjectsReady;
 
+        /// <summary>
+        /// Raised when the visual preset changes.
+        /// </summary>
+        public event Action<int>? VisualPresetChanged;
+
+        /// <summary>
+        /// Current visual preset index.
+        /// </summary>
+        public int VisualPresetLevelIndex => visualPresetLevelIndex;
+
         // Prefabs found in Resources by name.
         private readonly Dictionary<string, GameObject> prefabsByName =
             new(StringComparer.OrdinalIgnoreCase);
 
         // Global visual scaling and defaults shared by all solar objects.
         private readonly SolarObject.VisualContext visualContext = new();
+        private double defaultGlobalDistanceMultiplier = 1.0;
+        private double defaultGlobalRadiusMultiplier = 1.0;
+        private int defaultOrbitSegments = 256;
 
         // Guard for runtime controls initialization.
         private bool guiInitialized = false;
+        private bool isCanvasHidden = false;
+
+        // Cached reference to the Sun point light.
+        private Light? sunPointLight = null;
+        private bool sunPointLightLookupAttempted = false;
 
         // Time label update throttle.
         private float timeLabelUpdateTimer = 0.0f;
         #endregion
 
         #region Runtime Control Levels
-        // Human-readable labels for slider levels.
-        private readonly string[] timeScaleLevelNames = { "Standard", "Accelerated", "Hyper", "Maximum" };
-        private readonly string[] visualPresetLevelNames = { "Normal", "Minimal" };
+        // Human-readable labels for control levels.
+        private readonly string[] visualPresetLevelNames = { "Realistic", "Simulation" };
 
-        // Level values mapped to slider indices.
+        // Level values mapped to control indices.
         private readonly float[] timeScaleLevelValues = new float[4];
         private readonly float[] visualPresetDistanceValues = new float[2];
         private readonly float[] visualPresetRadiusValues = new float[2];
         private readonly int[] visualPresetOrbitSegmentsValues = new int[2];
 
-        // Active indices for each slider level.
+        // Active indices for each control level.
         private int timeScaleLevelIndex = 0;
         private int visualPresetLevelIndex = 0;
         #endregion
@@ -125,11 +151,12 @@ namespace Assets.Scripts.Runtime
                 return;
             }
 
-            Gui.TimeScaleLevelChanged += HandleTimeScaleLevelChanged;
-            Gui.VisualPresetLevelChanged += HandleVisualPresetLevelChanged;
+            Gui.TimeScaleStepRequested += HandleTimeScaleStepRequested;
+            Gui.VisualPresetStepRequested += HandleVisualPresetStepRequested;
             Gui.OrbitLinesToggled += HandleOrbitLinesToggled;
             Gui.SpinAxisToggled += HandleSpinAxisToggled;
             Gui.WorldUpToggled += HandleWorldUpToggled;
+            Gui.CanvasToggleRequested += HandleCanvasToggleRequested;
         }
 
         /// <summary>
@@ -147,6 +174,7 @@ namespace Assets.Scripts.Runtime
             guiInitialized = true;
 
             UpdateAppVersionText();
+            UpdateCanvasToggleText();
             ApplyVisualPresetLevel(visualPresetLevelIndex, true);
             UpdateTimeScaleText();
         }
@@ -162,11 +190,12 @@ namespace Assets.Scripts.Runtime
                 return;
             }
 
-            Gui.TimeScaleLevelChanged -= HandleTimeScaleLevelChanged;
-            Gui.VisualPresetLevelChanged -= HandleVisualPresetLevelChanged;
+            Gui.TimeScaleStepRequested -= HandleTimeScaleStepRequested;
+            Gui.VisualPresetStepRequested -= HandleVisualPresetStepRequested;
             Gui.OrbitLinesToggled -= HandleOrbitLinesToggled;
             Gui.SpinAxisToggled -= HandleSpinAxisToggled;
             Gui.WorldUpToggled -= HandleWorldUpToggled;
+            Gui.CanvasToggleRequested -= HandleCanvasToggleRequested;
 
             Gui.UnInitialize();
         }
@@ -211,15 +240,26 @@ namespace Assets.Scripts.Runtime
             if (_defaults != null)
             {
                 visualContext.DistanceKmPerUnityUnit = _defaults.DistanceKmPerUnityUnit;
-                visualContext.GlobalDistanceMultiplier = _defaults.GlobalDistanceMultiplier;
-                visualContext.GlobalRadiusMultiplier = _defaults.GlobalRadiusMultiplier;
-                visualContext.OrbitPathSegments = Math.Max(64, _defaults.OrbitPathSegmentsDefault);
+                defaultGlobalDistanceMultiplier = _defaults.GlobalDistanceMultiplier;
+                defaultGlobalRadiusMultiplier = _defaults.GlobalRadiusMultiplier;
+                defaultOrbitSegments = Math.Max(64, _defaults.OrbitPathSegmentsDefault);
+
+                visualContext.GlobalDistanceMultiplier = defaultGlobalDistanceMultiplier;
+                visualContext.GlobalRadiusMultiplier = defaultGlobalRadiusMultiplier;
+                visualContext.OrbitPathSegments = defaultOrbitSegments;
                 visualContext.MoonClearanceUnity = _defaults.MoonClearanceUnity;
             }
 
             if (_db.ById.TryGetValue("sun", out SolarObjectData _sunData))
             {
                 visualContext.ReferenceSolarObjectRadiusKm = _sunData.TruthPhysical?.MeanRadiusKm ?? 695700.0;
+            }
+
+            if (enableRuntimeControls)
+            {
+                visualContext.GlobalDistanceMultiplier = 0.02;
+                visualContext.GlobalRadiusMultiplier = 0.25;
+                visualContext.OrbitPathSegments = 64;
             }
         }
 
@@ -377,7 +417,7 @@ namespace Assets.Scripts.Runtime
 
         #region Runtime Controls
         /// <summary>
-        /// Configure runtime control slider ranges and defaults.
+        /// Configure runtime control values and defaults.
         /// </summary>
         private void SetupRuntimeGui()
         {
@@ -386,40 +426,25 @@ namespace Assets.Scripts.Runtime
                 return;
             }
 
-            // Discrete slider levels that map to curated values.
+            // Discrete control levels that map to curated values.
             timeScaleLevelValues[0] = timeScale;
-            timeScaleLevelValues[1] = 10_000.0f;
-            timeScaleLevelValues[2] = 100_000.0f;
-            timeScaleLevelValues[3] = 10_000_000.0f;
+            timeScaleLevelValues[1] = 1_000.0f;
+            timeScaleLevelValues[2] = 10_000.0f;
+            timeScaleLevelValues[3] = 200_000.0f;
 
             timeScaleLevelIndex = 1;
             timeScale = timeScaleLevelValues[timeScaleLevelIndex];
 
-            visualPresetDistanceValues[0] = (float)visualContext.GlobalDistanceMultiplier;
+            visualPresetDistanceValues[0] = (float)defaultGlobalDistanceMultiplier;
             visualPresetDistanceValues[1] = 0.02f;
 
-            visualPresetRadiusValues[0] = (float)visualContext.GlobalRadiusMultiplier;
+            visualPresetRadiusValues[0] = (float)defaultGlobalRadiusMultiplier;
             visualPresetRadiusValues[1] = 0.25f;
 
             visualPresetOrbitSegmentsValues[0] = 128;
             visualPresetOrbitSegmentsValues[1] = 64;
 
-            if (Gui.TimeScaleSlider != null)
-            {
-                Gui.TimeScaleSlider.wholeNumbers = true;
-                Gui.TimeScaleSlider.minValue = 0;
-                Gui.TimeScaleSlider.maxValue = timeScaleLevelValues.Length - 1;
-                Gui.TimeScaleSlider.value = timeScaleLevelIndex;
-            }
-
-            if (Gui.VisualPresetSlider != null)
-            {
-                Gui.VisualPresetSlider.wholeNumbers = true;
-                Gui.VisualPresetSlider.minValue = 0;
-                Gui.VisualPresetSlider.maxValue = visualPresetLevelNames.Length - 1;
-                visualPresetLevelIndex = 1;
-                Gui.VisualPresetSlider.value = visualPresetLevelIndex;
-            }
+            visualPresetLevelIndex = 1;
 
             if (Gui.OrbitLinesToggle != null)
             {
@@ -438,37 +463,56 @@ namespace Assets.Scripts.Runtime
         }
 
         /// <summary>
-        /// Apply a time scale level from the runtime slider.
+        /// Step the time scale level by a delta.
         /// </summary>
-        private void HandleTimeScaleLevelChanged(int _levelIndex)
+        private void HandleTimeScaleStepRequested(int _delta)
         {
             if (!guiInitialized)
             {
                 return;
             }
 
-            int _clamped = Mathf.Clamp(_levelIndex, 0, timeScaleLevelValues.Length - 1);
-            if (_clamped == timeScaleLevelIndex)
+            int _step = _delta == 0 ? 0 : Math.Sign(_delta);
+            int _targetIndex = Mathf.Clamp(
+                timeScaleLevelIndex + _step,
+                0,
+                timeScaleLevelValues.Length - 1
+            );
+
+            if (_targetIndex == timeScaleLevelIndex)
             {
                 return;
             }
 
-            timeScaleLevelIndex = _clamped;
+            timeScaleLevelIndex = _targetIndex;
             timeScale = timeScaleLevelValues[timeScaleLevelIndex];
+
             UpdateTimeScaleText();
         }
 
         /// <summary>
-        /// Apply a visual preset level from the runtime slider.
+        /// Step the visual preset level by a delta.
         /// </summary>
-        private void HandleVisualPresetLevelChanged(int _levelIndex)
+        private void HandleVisualPresetStepRequested(int _delta)
         {
             if (!guiInitialized)
             {
                 return;
             }
 
-            ApplyVisualPresetLevel(_levelIndex, true);
+            int _step = _delta == 0 ? 0 : Math.Sign(_delta);
+            int _targetIndex = Mathf.Clamp(
+                visualPresetLevelIndex + _step,
+                0,
+                visualPresetLevelNames.Length - 1
+            );
+
+            if (_targetIndex == visualPresetLevelIndex)
+            {
+                return;
+            }
+
+            ApplyVisualPresetLevel(_targetIndex, true);
         }
 
         /// <summary>
@@ -514,6 +558,30 @@ namespace Assets.Scripts.Runtime
         }
 
         /// <summary>
+        /// Toggle canvas visibility via the runtime GUI.
+        /// </summary>
+        private void HandleCanvasToggleRequested()
+        {
+            if (!guiInitialized)
+            {
+                return;
+            }
+
+            if (isCanvasHidden)
+            {
+                Gui.Show(Panel.Simulation);
+                isCanvasHidden = false;
+            }
+            else
+            {
+                Gui.Hide();
+                isCanvasHidden = true;
+            }
+
+            UpdateCanvasToggleText();
+        }
+
+        /// <summary>
         /// Re-apply visual scaling to all objects.
         /// </summary>
         private void RefreshAllVisuals()
@@ -544,11 +612,7 @@ namespace Assets.Scripts.Runtime
 
             if (Gui.TimeScaleValueText != null)
             {
-                string _label = timeScaleLevelNames[
-                    Mathf.Clamp(timeScaleLevelIndex, 0, timeScaleLevelNames.Length - 1)
-                ];
-                Gui.TimeScaleValueText.text =
-                    $"Time Scale: {_label} ({timeScale:0.##}x, Sim {_simDays:0.00} d)";
+                Gui.TimeScaleValueText.text = $"{timeScale:0.##}x\n({_simDays:0.00} d)";
             }
         }
 
@@ -567,6 +631,33 @@ namespace Assets.Scripts.Runtime
         }
 
         /// <summary>
+        /// Update the canvas toggle label.
+        /// </summary>
+        private void UpdateCanvasToggleText()
+        {
+            string _label = isCanvasHidden ? "Show UI" : "Hide UI";
+
+            if (Gui.CanvasToggleValueText != null)
+            {
+                Gui.CanvasToggleValueText.text = _label;
+                return;
+            }
+
+            if (Gui.CanvasToggleButton == null)
+            {
+                return;
+            }
+
+            TextMeshProUGUI _text = Gui.CanvasToggleButton.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (_text == null)
+            {
+                return;
+            }
+
+            _text.text = _label;
+        }
+
+        /// <summary>
         /// Update the visual preset label with all current settings.
         /// </summary>
         private void UpdateVisualPresetText()
@@ -580,13 +671,7 @@ namespace Assets.Scripts.Runtime
                 Mathf.Clamp(visualPresetLevelIndex, 0, visualPresetLevelNames.Length - 1)
             ];
 
-            Gui.VisualPresetValueText.text =
-                $"Visual Preset: {_label}\n" +
-                $"Distance km/unit: {visualContext.DistanceKmPerUnityUnit:0}\n" +
-                $"Global Distance: {visualContext.GlobalDistanceMultiplier:0.###}\n" +
-                $"Global Radius: {visualContext.GlobalRadiusMultiplier:0.###}\n" +
-                $"Orbit Segments: {visualContext.OrbitPathSegments}\n" +
-                $"Moon Clearance: {visualContext.MoonClearanceUnity:0.###}";
+            Gui.VisualPresetValueText.text = _label;
         }
 
         /// <summary>
@@ -606,6 +691,20 @@ namespace Assets.Scripts.Runtime
             visualContext.OrbitPathSegments = visualPresetOrbitSegmentsValues[visualPresetLevelIndex];
             visualContext.RuntimeLineWidthScale = visualPresetLevelIndex == 0 ? 1.0f : 0.25f;
 
+            VisualPresetChanged?.Invoke(visualPresetLevelIndex);
+
+            string _label = visualPresetLevelNames[
+                Mathf.Clamp(visualPresetLevelIndex, 0, visualPresetLevelNames.Length - 1)
+            ];
+
+            HelpLogs.Log(
+                "Simulator",
+                $"Visual preset {_label}: distance {visualContext.GlobalDistanceMultiplier:0.###}, " +
+                $"radius {visualContext.GlobalRadiusMultiplier:0.###}, segments {visualContext.OrbitPathSegments}"
+            );
+
+            ApplySunLightPreset();
+
             if (_refreshVisuals)
             {
                 RefreshAllVisuals();
@@ -614,28 +713,95 @@ namespace Assets.Scripts.Runtime
             MarkAllLineStylesDirty();
             UpdateVisualPresetText();
         }
-        #endregion
 
-        #region Helpers
         /// <summary>
-        /// Find the nearest index in a list of level values.
+        /// Apply the Sun point light values based on the current visual preset.
         /// </summary>
-        private static int GetClosestLevelIndex(float _value, float[] _levels)
+        private void ApplySunLightPreset()
         {
-            int _bestIndex = 0;
-            float _bestDistance = float.MaxValue;
-            for (int _i = 0; _i < _levels.Length; _i++)
+            Light? _sunLight = GetSunPointLight();
+            if (_sunLight == null)
             {
-                float _dist = Mathf.Abs(_value - _levels[_i]);
-                if (_dist < _bestDistance)
+                return;
+            }
+
+            if (_sunLight.type != LightType.Point)
+            {
+                HelpLogs.Warn("Simulator", "Sun light is not a Point light. Check the Sun prefab.");
+            }
+
+            bool _isNormal = visualPresetLevelIndex == 0;
+            float _targetIntensity = _isNormal ? sunLightNormalIntensity : sunLightMinimalIntensity;
+            float _targetRange = _isNormal ? sunLightNormalRange : sunLightMinimalRange;
+            float _targetIndirect = 0.0f;
+
+            bool _needsUpdate =
+                !Mathf.Approximately(_sunLight.intensity, _targetIntensity) ||
+                !Mathf.Approximately(_sunLight.range, _targetRange) ||
+                !Mathf.Approximately(_sunLight.bounceIntensity, _targetIndirect);
+
+            if (_needsUpdate)
+            {
+                string _presetLabel = visualPresetLevelNames[
+                    Mathf.Clamp(visualPresetLevelIndex, 0, visualPresetLevelNames.Length - 1)
+                ];
+
+                HelpLogs.Warn(
+                    "Simulator",
+                    $"Sun light values did not match preset '{_presetLabel}'. Applying intensity " +
+                    $"{_targetIntensity:0.###}, range {_targetRange:0.###}."
+                );
+            }
+
+            _sunLight.intensity = _targetIntensity;
+            _sunLight.range = _targetRange;
+            _sunLight.bounceIntensity = _targetIndirect;
+        }
+
+        /// <summary>
+        /// Locate the Sun point light once and cache it for future updates.
+        /// </summary>
+        private Light? GetSunPointLight()
+        {
+            if (sunPointLight != null)
+            {
+                return sunPointLight;
+            }
+
+            if (sunPointLightLookupAttempted)
+            {
+                return null;
+            }
+
+            sunPointLightLookupAttempted = true;
+
+            if (!instancesById.TryGetValue("sun", out SolarObject _sun))
+            {
+                HelpLogs.Warn("Simulator", "Sun solar object not found. Cannot resolve its point light.");
+                return null;
+            }
+
+            Light[] _lights = _sun.GetComponentsInChildren<Light>(true);
+            if (_lights.Length == 0)
+            {
+                HelpLogs.Warn("Simulator", "No Light component found under the Sun solar object.");
+                return null;
+            }
+
+            for (int _i = 0; _i < _lights.Length; _i++)
+            {
+                if (_lights[_i].type == LightType.Point)
                 {
-                    _bestDistance = _dist;
-                    _bestIndex = _i;
+                    sunPointLight = _lights[_i];
+                    return sunPointLight;
                 }
             }
 
-            return _bestIndex;
+            sunPointLight = _lights[0];
+            HelpLogs.Warn("Simulator", "Sun light is not Point. Using the first Light found.");
+            return sunPointLight;
         }
         #endregion
+
     }
 }

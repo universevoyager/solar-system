@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Assets.Scripts.Helpers.Debugging;
 using UnityEngine;
@@ -99,15 +100,25 @@ namespace Assets.Scripts.Guis
             }
 
             Canvas _canvas = GameObject.FindFirstObjectByType<Canvas>();
-
             if (_canvas == null)
             {
                 HelpLogs.Warn("Gui", "Can not locate canvas on this scene");
                 return;
             }
 
+            HashSet<string> _panelNames = new HashSet<string>(
+                Enum.GetNames(typeof(Panel)),
+                StringComparer.OrdinalIgnoreCase
+            );
+            _panelNames.Remove(nameof(Panel.None));
+
             foreach (Transform _canvasChild in _canvas.transform)
             {
+                if (!_panelNames.Contains(_canvasChild.name))
+                {
+                    continue;
+                }
+
                 if (_canvasChild.GetComponent<RectTransform>() != null)
                 {
                     HelpLogs.Log(

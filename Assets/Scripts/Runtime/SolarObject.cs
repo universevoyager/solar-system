@@ -38,13 +38,34 @@ namespace Assets.Scripts.Runtime
         [SerializeField] private bool drawOrbitRuntime = true;
         [SerializeField] private bool drawAxisRuntime = true;
         [SerializeField] private bool drawWorldUpRuntime = true;
-        [SerializeField] private float orbitLineWidth = 0.04f;
-        [SerializeField] private float axisLineWidth = 0.02f;
+        [SerializeField] private float orbitLineWidth = 0.06f;
+        [SerializeField] private float axisLineWidth = 0.03f;
         [SerializeField] private Color orbitLineColor = new Color(0.2f, 0.7f, 1.0f, 0.9f);
         [SerializeField] private Color moonOrbitLineColor = new Color(0.3f, 0.9f, 0.5f, 0.9f);
         [SerializeField] private Color dwarfOrbitLineColor = new Color(0.9f, 0.5f, 0.9f, 0.9f);
         [SerializeField] private Color axisLineColor = new Color(1.0f, 0.8f, 0.2f, 0.9f);
         [SerializeField] private Color worldUpLineColor = new Color(0.7f, 0.7f, 0.7f, 0.8f);
+
+        [Header("Axis Line Distance Scaling")]
+        [SerializeField] private bool scaleAxisLinesByCameraDistance = true;
+        [SerializeField] private float axisLineDistanceReference = 1.5f;
+        [SerializeField] private float axisLineDistanceMinScale = 0.8f;
+        [SerializeField] private float axisLineDistanceMaxScale = 1.6f;
+
+        [Header("Axis Line Size Scaling")]
+        [SerializeField] private float axisLineSizeReference = 0.15f;
+        [SerializeField] private float axisLineSizeMinScale = 1.3f;
+        [SerializeField] private float axisLineSizeMaxScale = 2.2f;
+        [SerializeField] private float axisLineSizeWidthMaxScale = 1.6f;
+        [SerializeField] private float axisLineSizeStarMaxScale = 1.4f;
+        [SerializeField] private float axisLineSmallBodyDiameterThreshold = 0.25f;
+        [SerializeField] private float axisLineSmallBodyLengthScale = 1.6f;
+
+        [Header("Orbit Line Distance Scaling")]
+        [SerializeField] private bool scaleOrbitLinesByCameraDistance = true;
+        [SerializeField] private float orbitLineDistanceReference = 6.0f;
+        [SerializeField] private float orbitLineDistanceMinScale = 0.6f;
+        [SerializeField] private float orbitLineDistanceMaxScale = 1.6f;
         #endregion
 
         #region Runtime State
@@ -97,6 +118,8 @@ namespace Assets.Scripts.Runtime
 
         private static Material? lineMaterial;
         private bool lineStylesDirty = true;
+        private float axisLineDistanceScale = 1.0f;
+        private float orbitLineDistanceScale = 1.0f;
         #endregion
 
         #region Public API
@@ -104,6 +127,28 @@ namespace Assets.Scripts.Runtime
         /// Dataset id for this solar object.
         /// </summary>
         public string Id => id;
+
+        /// <summary>
+        /// Current diameter in Unity units (includes global radius multiplier).
+        /// </summary>
+        public float DiameterUnity => solarObjectDiameterUnity;
+
+        /// <summary>
+        /// Diameter normalized to ignore the global radius multiplier.
+        /// </summary>
+        public float BaseDiameterUnity
+        {
+            get
+            {
+                if (visualContext == null)
+                {
+                    return solarObjectDiameterUnity;
+                }
+
+                double _global = Math.Max(1e-6, visualContext.GlobalRadiusMultiplier);
+                return (float)(solarObjectDiameterUnity / _global);
+            }
+        }
 
         /// <summary>
         /// Initialize from dataset and shared visual context.
@@ -460,6 +505,13 @@ namespace Assets.Scripts.Runtime
             bool _drawSpinAxis = drawAxisRuntime && visualContext.ShowSpinAxisLines;
             bool _drawWorldUp = drawWorldUpRuntime && visualContext.ShowWorldUpLines;
 
+            bool _axisScaleChanged = UpdateAxisLineDistanceScale();
+            bool _orbitScaleChanged = UpdateOrbitLineDistanceScale();
+            if (_axisScaleChanged || _orbitScaleChanged)
+            {
+                lineStylesDirty = true;
+            }
+
             if (_drawOrbit)
             {
                 UpdateOrbitLine();
@@ -594,7 +646,7 @@ namespace Assets.Scripts.Runtime
 
             Vector3 _p = transform.position;
             Vector3 _axis = transform.rotation * Vector3.up;
-            float _len = Mathf.Max(0.25f, transform.localScale.x * 1.25f);
+            float _len = GetAxisLineLength();
 
             if (_drawSpinAxis)
             {
@@ -619,6 +671,44 @@ namespace Assets.Scripts.Runtime
             {
                 worldUpLine.enabled = false;
             }
+        }
+
+        /// <summary>
+        /// Compute axis line length from scale and solar object type.
+        /// </summary>
+        private float GetAxisLineLength()
+        {
+            float _baseLen = transform.localScale.x * 0.5f;
+            float _typeScale = GetAxisLineTypeScale();
+            float _sizeScale = GetAxisLineSizeScale();
+            float _smallBodyScale = GetAxisLineSmallBodyLengthScale();
+            return Mathf.Max(
+                0.1f,
+                _baseLen * _typeScale * _sizeScale * _smallBodyScale * axisLineDistanceScale
+            );
+        }
+
+        /// <summary>
+        /// Per-type length scaling to keep lines readable across object classes.
+        /// </summary>
+        private float GetAxisLineTypeScale()
+        {
+            if (string.Equals(type, "moon", StringComparison.OrdinalIgnoreCase))
+            {
+                return 0.6f;
+            }
+
+            if (string.Equals(type, "dwarf_planet", StringComparison.OrdinalIgnoreCase))
+            {
+                return 0.85f;
+            }
+
+            if (string.Equals(type, "star", StringComparison.OrdinalIgnoreCase))
+            {
+                return 1.6f;
+            }
+
+            return 1.0f;
         }
 
         /// <summary>
@@ -668,7 +758,7 @@ namespace Assets.Scripts.Runtime
 
             if (orbitLine != null)
             {
-                float _width = Mathf.Max(0.0001f, orbitLineWidth * _scale);
+                float _width = Mathf.Max(0.0001f, orbitLineWidth * _scale * orbitLineDistanceScale);
                 orbitLine.startWidth = _width;
                 orbitLine.endWidth = _width;
                 _applied = true;
@@ -676,7 +766,8 @@ namespace Assets.Scripts.Runtime
 
             if (axisLine != null)
             {
-                float _width = Mathf.Max(0.0001f, axisLineWidth * _scale);
+                float _widthScale = GetAxisLineWidthScale();
+                float _width = Mathf.Max(0.0001f, axisLineWidth * _scale * 0.5f * _widthScale);
                 axisLine.startWidth = _width;
                 axisLine.endWidth = _width;
                 _applied = true;
@@ -684,7 +775,8 @@ namespace Assets.Scripts.Runtime
 
             if (worldUpLine != null)
             {
-                float _width = Mathf.Max(0.0001f, axisLineWidth * _scale);
+                float _widthScale = GetAxisLineWidthScale();
+                float _width = Mathf.Max(0.0001f, axisLineWidth * _scale * 0.5f * _widthScale);
                 worldUpLine.startWidth = _width;
                 worldUpLine.endWidth = _width;
                 _applied = true;
@@ -709,6 +801,116 @@ namespace Assets.Scripts.Runtime
 
             float _base = Mathf.Clamp(_avg, 0.2f, 2.0f);
             return _base * Mathf.Clamp(visualContext.RuntimeLineWidthScale, 0.1f, 2.0f);
+        }
+
+        private float GetAxisLineWidthScale()
+        {
+            float _scale = axisLineDistanceScale;
+            float _sizeScale = GetAxisLineSizeWidthScale();
+            _scale *= _sizeScale;
+
+            if (string.Equals(type, "star", StringComparison.OrdinalIgnoreCase) &&
+                visualContext != null &&
+                visualContext.RuntimeLineWidthScale < 1.0f)
+            {
+                _scale *= 2.0f;
+            }
+
+            return _scale;
+        }
+
+        private float GetAxisLineSizeScale()
+        {
+            if (visualContext != null && visualContext.RuntimeLineWidthScale < 1.0f)
+            {
+                return 1.0f;
+            }
+
+            float _reference = Mathf.Max(0.001f, axisLineSizeReference);
+            float _scale = transform.localScale.x / _reference;
+            _scale = Mathf.Clamp(_scale, axisLineSizeMinScale, axisLineSizeMaxScale);
+
+            if (string.Equals(type, "star", StringComparison.OrdinalIgnoreCase))
+            {
+                _scale = Mathf.Min(_scale, axisLineSizeStarMaxScale);
+            }
+
+            return _scale;
+        }
+
+        private float GetAxisLineSizeWidthScale()
+        {
+            float _scale = GetAxisLineSizeScale();
+            return Mathf.Min(_scale, axisLineSizeWidthMaxScale);
+        }
+
+        private float GetAxisLineSmallBodyLengthScale()
+        {
+            if (visualContext != null && visualContext.RuntimeLineWidthScale < 1.0f)
+            {
+                return 1.0f;
+            }
+
+            if (!string.Equals(type, "planet", StringComparison.OrdinalIgnoreCase))
+            {
+                return 1.0f;
+            }
+
+            float _threshold = Mathf.Max(0.01f, axisLineSmallBodyDiameterThreshold);
+            if (BaseDiameterUnity >= _threshold)
+            {
+                return 1.0f;
+            }
+
+            return axisLineSmallBodyLengthScale;
+        }
+
+        private bool UpdateAxisLineDistanceScale()
+        {
+            float _scale = 1.0f;
+
+            if (scaleAxisLinesByCameraDistance)
+            {
+                Camera _camera = Camera.main;
+                if (_camera != null)
+                {
+                    float _reference = Mathf.Max(0.01f, axisLineDistanceReference);
+                    float _distance = Vector3.Distance(_camera.transform.position, transform.position);
+                    _scale = Mathf.Clamp(_distance / _reference, axisLineDistanceMinScale, axisLineDistanceMaxScale);
+                }
+            }
+
+            if (Mathf.Approximately(axisLineDistanceScale, _scale))
+            {
+                return false;
+            }
+
+            axisLineDistanceScale = _scale;
+            return true;
+        }
+
+        private bool UpdateOrbitLineDistanceScale()
+        {
+            float _scale = 1.0f;
+
+            if (scaleOrbitLinesByCameraDistance)
+            {
+                Camera _camera = Camera.main;
+                if (_camera != null)
+                {
+                    float _reference = Mathf.Max(0.01f, orbitLineDistanceReference);
+                    float _distance = Vector3.Distance(_camera.transform.position, transform.position);
+                    _scale = Mathf.Clamp(_distance / _reference, orbitLineDistanceMinScale, orbitLineDistanceMaxScale);
+                }
+            }
+
+            if (Mathf.Approximately(orbitLineDistanceScale, _scale))
+            {
+                return false;
+            }
+
+            orbitLineDistanceScale = _scale;
+            return true;
         }
 
         /// <summary>

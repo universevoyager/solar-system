@@ -41,14 +41,14 @@ Simulation time advances by:
 ```
 simulation_time_seconds += Time.deltaTime * timeScale
 ```
-`timeScale` defaults to `1.0f` inside `SolarSystemSimulator` and represents the **Standard** level for runtime controls.
-If runtime controls are activated, the Time Scale slider switches between:
-- Standard = default (`1.0x` unless you change it in code)
-- Accelerated = `10,000x`
-- Hyper = `100,000x`
-- Maximum = `10,000,000x`
+`timeScale` defaults to `1.0f` inside `SolarSystemSimulator` and represents the **Default** level for runtime controls.
+If runtime controls are activated, the Time Scale buttons switch between:
+- Default = default (`1.0x` unless you change it in code)
+- Speed_1000x = `1,000x`
+- Speed_10000x = `10,000x`
+- Speed_200000x = `200,000x`
 
-By default, runtime controls start at **Accelerated**.
+By default, runtime controls start at **Speed_1000x**.
 
 If runtime controls are deactivated, change the default by editing `timeScale` in `SolarSystemSimulator`.
 Example:
@@ -142,6 +142,8 @@ Naming:
   - `sun.prefab`, `earth.prefab`, `moon.prefab`, `mars.prefab`, `pluto.prefab`, etc.
 - Add a fallback prefab:
   - `Template.prefab`
+Note:
+- The dataset currently includes `ceres` and `eris`. If you do not add prefabs for them, they will use `Template.prefab`.
 
 You do **not** need to manually add scripts to prefabs:
 - the simulator will add `SolarObject` if missing.
@@ -158,36 +160,48 @@ Press **Play**.
 
 ## Runtime Controls (Optional)
 
-`SolarSystemSimulator` can auto-bind sliders and labels for live tuning at runtime.
+`SolarSystemSimulator` can auto-bind buttons and labels for live tuning at runtime.
 Turn this on via `enableRuntimeControls` in the Inspector.
 
 The runtime GUI uses the **first Canvas** it finds and looks for named widgets.
-Add `Gui_RuntimeControlEvents` to the Canvas so slider changes are applied via `onValueChanged`.
+Add `Gui_RuntimeControlEvents` to the Canvas so button presses are applied via events.
 
 Text labels (`TextMeshProUGUI`):
 - `TimeScaleValueText`
 - `VisualPresetValueText`
 - `AppVersionText`
+- `CanvasToggleValueText`
 
-Sliders (`UnityEngine.UI.Slider`):
-- `TimeScaleSlider`
-- `VisualPresetSlider`
+Buttons (`UnityEngine.UI.Button`):
+- `TimeScaleMinusButton`
+- `TimeScalePlusButton`
+- `VisualPresetMinusButton`
+- `VisualPresetPlusButton`
+- `CameraOrbitUpButton`
+- `CameraOrbitDownButton`
+- `CameraOrbitLeftButton`
+- `CameraOrbitRightButton`
+- `CameraZoomInButton`
+- `CameraZoomOutButton`
+- `CanvasToggleButton`
 
 Toggles (`UnityEngine.UI.Toggle`):
 - `OrbitLinesToggle`
 - `SpinAxisToggle`
 - `WorldUpToggle`
 
-Slider levels (names and values):
+The canvas visibility toggle hides only panels registered by the `Panel` enum, so keep `CanvasToggleButton` outside those panels if you want it always visible.
+
+Control levels (names and values):
 
 | Control | Levels |
 | --- | --- |
-| Time Scale | Standard = default, Accelerated = 10,000x, Hyper = 100,000x, Maximum = 10,000,000x |
-| Visual Preset | Normal = distance/radius defaults + orbit segments 128, Minimal (default) = distance 0.02 + radius 0.25 + orbit segments 64 |
+| Time Scale | Default = default, Speed_1000x = 1,000x, Speed_10000x = 10,000x, Speed_200000x = 200,000x |
+| Visual Preset | Realistic = distance/radius defaults + orbit segments 128, Simulation (default) = distance 0.02 + radius 0.25 + orbit segments 64 |
 
-Defaults come from `global_visual_defaults` for distance and radius (Normal preset), while Time Scale is set in code.
-Orbit segments are 128 (Normal) and 64 (Minimal), and distance km/unit + moon clearance remain at their default values across presets.
-When Minimal is active, runtime line widths are scaled down by 0.25x.
+Defaults come from `global_visual_defaults` for distance and radius (Realistic preset), while Time Scale is set in code.
+Orbit segments are 128 (Realistic) and 64 (Simulation), and distance km/unit + moon clearance remain at their default values across presets.
+When Simulation is active, runtime line widths are scaled down by 0.25x.
 
 ---
 
@@ -210,6 +224,11 @@ Add these components to the scene:
 - `SolarSystemCameraController` (camera logic)
 - `Gui_SolarObjectGrid` (builds focus buttons at runtime)
 
+Realistic preset behavior:
+- Overview zoom range expands to 50–500, with faster zoom speed than Simulation.
+- Focus zoom minimum is slightly increased to reduce clipping into objects.
+- Proxy targets and zoom distance are smoothed in `SolarSystemCameraController` for cleaner transitions.
+
 ---
 
 ## Runtime Lines (Orbits + Axes)
@@ -219,14 +238,14 @@ These lines are children of each `SolarObject` and show in both the editor and b
 Controls live on the `SolarObject` component:
 - Toggle orbit lines / axis lines
 - Adjust line widths and colors
-- Widths auto-scale based on global distance/radius multipliers
+- Widths auto-scale based on global distance/radius multipliers and camera distance
 
 Global toggles for orbit paths, spin axis, and world-up lines are available in the runtime GUI.
 
 ---
 
 ## Performance Notes (WebGL)
-- Orbit line resolution uses runtime presets (Normal = 128, Minimal = 64). With runtime controls off, it falls back to `global_visual_defaults.orbit_path_segments_default`.
+- Orbit line resolution uses runtime presets (Realistic = 128, Simulation = 64). With runtime controls off, it falls back to `global_visual_defaults.orbit_path_segments_default`.
 - Many objects + high segment counts can be expensive. Reduce segments for WebGL builds.
 - Prefer compressed textures and reasonable texture sizes for WebGL memory limits.
 
@@ -234,9 +253,10 @@ Global toggles for orbit paths, spin axis, and world-up lines are available in t
 
 ## Known Issues
 - Changing orbit parameters at runtime is not supported, make sure to edit the JSON and restart.
+- Some Saturn moons have incorrect orbits outside Saturn's ring tilt (math mismatch).
 - Planetary shadows on some moons are missing or inconsistent, they should be occluded at certain angles.
-- Realistic-size presets need a larger camera distance, the current 0.2 to 1.5 range is tuned for the Minimal preset.
-- Maximum time scale (10,000,000x) is too fast and should likely be reduced by 10x.
+- Realistic-size presets need a larger camera distance, the current focus distance range is tuned for the Simulation preset.
+- Maximum time scale (200,000x) can still be too fast for some devices.
 - Grid layout buttons can override their borders when sized by layout groups.
 - Moon tidal-locking is correct in motion, but the initial facing direction is not aligned to Earth by default.
 
@@ -249,6 +269,7 @@ Global toggles for orbit paths, spin axis, and world-up lines are available in t
 - Use `HelpLogs` for logs, warnings, and errors.
 - Keep namespaces aligned with folder structure (e.g. `Assets.Scripts.Runtime`).
 - Avoid obsolete APIs and keep code current with the project dependencies.
+- Use `#region` blocks to group related fields and methods.
 
 ---
 
