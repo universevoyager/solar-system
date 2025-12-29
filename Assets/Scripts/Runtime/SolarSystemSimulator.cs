@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 using Assets.Scripts.Data;
 using Assets.Scripts.Loading;
 using Assets.Scripts.Guis;
@@ -87,8 +86,6 @@ namespace Assets.Scripts.Runtime
 
         // Guard for runtime controls initialization.
         private bool guiInitialized = false;
-        private bool isCanvasHidden = false;
-
         // Cached reference to the Sun point light.
         private Light? sunPointLight = null;
         private bool sunPointLightLookupAttempted = false;
@@ -156,7 +153,6 @@ namespace Assets.Scripts.Runtime
             Gui.OrbitLinesToggled += HandleOrbitLinesToggled;
             Gui.SpinAxisToggled += HandleSpinAxisToggled;
             Gui.WorldUpToggled += HandleWorldUpToggled;
-            Gui.CanvasToggleRequested += HandleCanvasToggleRequested;
         }
 
         /// <summary>
@@ -174,7 +170,6 @@ namespace Assets.Scripts.Runtime
             guiInitialized = true;
 
             UpdateAppVersionText();
-            UpdateCanvasToggleText();
             ApplyVisualPresetLevel(visualPresetLevelIndex, true);
             UpdateTimeScaleText();
         }
@@ -195,7 +190,6 @@ namespace Assets.Scripts.Runtime
             Gui.OrbitLinesToggled -= HandleOrbitLinesToggled;
             Gui.SpinAxisToggled -= HandleSpinAxisToggled;
             Gui.WorldUpToggled -= HandleWorldUpToggled;
-            Gui.CanvasToggleRequested -= HandleCanvasToggleRequested;
 
             Gui.UnInitialize();
         }
@@ -558,30 +552,6 @@ namespace Assets.Scripts.Runtime
         }
 
         /// <summary>
-        /// Toggle canvas visibility via the runtime GUI.
-        /// </summary>
-        private void HandleCanvasToggleRequested()
-        {
-            if (!guiInitialized)
-            {
-                return;
-            }
-
-            if (isCanvasHidden)
-            {
-                Gui.Show(Panel.Simulation);
-                isCanvasHidden = false;
-            }
-            else
-            {
-                Gui.Hide();
-                isCanvasHidden = true;
-            }
-
-            UpdateCanvasToggleText();
-        }
-
-        /// <summary>
         /// Re-apply visual scaling to all objects.
         /// </summary>
         private void RefreshAllVisuals()
@@ -628,33 +598,6 @@ namespace Assets.Scripts.Runtime
 
             string _version = string.IsNullOrWhiteSpace(Application.version) ? "0.0.0" : Application.version;
             Gui.AppVersionText.text = $"Version: {_version}";
-        }
-
-        /// <summary>
-        /// Update the canvas toggle label.
-        /// </summary>
-        private void UpdateCanvasToggleText()
-        {
-            string _label = isCanvasHidden ? "Show UI" : "Hide UI";
-
-            if (Gui.CanvasToggleValueText != null)
-            {
-                Gui.CanvasToggleValueText.text = _label;
-                return;
-            }
-
-            if (Gui.CanvasToggleButton == null)
-            {
-                return;
-            }
-
-            TextMeshProUGUI _text = Gui.CanvasToggleButton.GetComponentInChildren<TextMeshProUGUI>(true);
-            if (_text == null)
-            {
-                return;
-            }
-
-            _text.text = _label;
         }
 
         /// <summary>

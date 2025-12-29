@@ -13,7 +13,6 @@ namespace Assets.Scripts.Guis
         /// </summary>
         public static void Initialize()
         {
-            AllocatePanels();
             AllocateInteractionWidgets();
         }
 #endregion
@@ -24,7 +23,6 @@ namespace Assets.Scripts.Guis
         /// </summary>
         public static void UnInitialize()
         {
-            DeallocatePanels();
             DeallocateInteractionWidgets();
         }
 #endregion

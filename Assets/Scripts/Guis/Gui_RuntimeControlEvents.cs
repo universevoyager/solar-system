@@ -24,7 +24,6 @@ namespace Assets.Scripts.Guis
         [SerializeField] private Button? cameraOrbitRightButton;
         [SerializeField] private Button? cameraZoomInButton;
         [SerializeField] private Button? cameraZoomOutButton;
-        [SerializeField] private Button? canvasToggleButton;
         #endregion
 
         #region Runtime State
@@ -123,11 +122,6 @@ namespace Assets.Scripts.Guis
             if (cameraZoomOutButton == null)
             {
                 cameraZoomOutButton = Gui.CameraZoomOutButton;
-            }
-
-            if (canvasToggleButton == null)
-            {
-                canvasToggleButton = Gui.CanvasToggleButton;
             }
 
             bool boundAny = false;
@@ -246,16 +240,6 @@ namespace Assets.Scripts.Guis
                 HelpLogs.Warn("Gui", "Missing camera zoom buttons.");
             }
 
-            if (canvasToggleButton != null)
-            {
-                canvasToggleButton.onClick.AddListener(HandleCanvasToggle);
-                boundAny = true;
-            }
-            else
-            {
-                HelpLogs.Warn("Gui", "Missing canvas toggle button.");
-            }
-
             isBound =
                 boundAny ||
                 timeScaleButtonsBound ||
@@ -339,11 +323,6 @@ namespace Assets.Scripts.Guis
                 cameraZoomOutButton.onClick.RemoveListener(HandleCameraZoomOut);
             }
 
-            if (canvasToggleButton != null)
-            {
-                canvasToggleButton.onClick.RemoveListener(HandleCanvasToggle);
-            }
-
             isBound = false;
         }
         #endregion
@@ -414,10 +393,6 @@ namespace Assets.Scripts.Guis
             Gui.NotifyCameraZoomStepRequested(-1);
         }
 
-        private void HandleCanvasToggle()
-        {
-            Gui.NotifyCanvasToggleRequested();
-        }
         #endregion
     }
 }

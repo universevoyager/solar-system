@@ -17,7 +17,6 @@ namespace Assets.Scripts.Guis
         public static TextMeshProUGUI? TimeScaleValueText { get; private set; }
         public static TextMeshProUGUI? VisualPresetValueText { get; private set; }
         public static TextMeshProUGUI? AppVersionText { get; private set; }
-        public static TextMeshProUGUI? CanvasToggleValueText { get; private set; }
 
         public static Toggle? OrbitLinesToggle { get; private set; }
         public static Toggle? SpinAxisToggle { get; private set; }
@@ -32,7 +31,6 @@ namespace Assets.Scripts.Guis
         public static Button? CameraOrbitRightButton { get; private set; }
         public static Button? CameraZoomInButton { get; private set; }
         public static Button? CameraZoomOutButton { get; private set; }
-        public static Button? CanvasToggleButton { get; private set; }
 
         private static bool runtimeWidgetsAllocated = false;
         #endregion
@@ -56,7 +54,6 @@ namespace Assets.Scripts.Guis
         public static event Action<bool>? OrbitLinesToggled;
         public static event Action<bool>? SpinAxisToggled;
         public static event Action<bool>? WorldUpToggled;
-        public static event Action? CanvasToggleRequested;
         #endregion
 
         #region Public Helpers
@@ -104,14 +101,6 @@ namespace Assets.Scripts.Guis
         public static void NotifyCameraZoomStepRequested(int _delta)
         {
             CameraZoomStepRequested?.Invoke(_delta);
-        }
-
-        /// <summary>
-        /// Relay a canvas visibility toggle request to listeners.
-        /// </summary>
-        public static void NotifyCanvasToggleRequested()
-        {
-            CanvasToggleRequested?.Invoke();
         }
 
         /// <summary>
@@ -210,7 +199,6 @@ namespace Assets.Scripts.Guis
             AppVersionText = GetTextByName("AppVersionText");
             TimeScaleValueText = GetTextByName("TimeScaleValueText");
             VisualPresetValueText = GetTextByName("VisualPresetValueText");
-            CanvasToggleValueText = GetTextByName("CanvasToggleValueText");
 
             OrbitLinesToggle = GetToggleByName("OrbitLinesToggle");
             SpinAxisToggle = GetToggleByName("SpinAxisToggle");
@@ -225,7 +213,6 @@ namespace Assets.Scripts.Guis
             CameraOrbitRightButton = TryGetButtonByName("CameraOrbitRightButton");
             CameraZoomInButton = TryGetButtonByName("CameraZoomInButton");
             CameraZoomOutButton = TryGetButtonByName("CameraZoomOutButton");
-            CanvasToggleButton = TryGetButtonByName("CanvasToggleButton");
 
             bool _hasTimeScaleButtons = TimeScaleMinusButton != null || TimeScalePlusButton != null;
             bool _hasPresetButtons = VisualPresetMinusButton != null || VisualPresetPlusButton != null;
@@ -235,7 +222,6 @@ namespace Assets.Scripts.Guis
                 CameraOrbitLeftButton != null ||
                 CameraOrbitRightButton != null;
             bool _hasCameraZoomButtons = CameraZoomInButton != null || CameraZoomOutButton != null;
-            bool _hasCanvasToggleButton = CanvasToggleButton != null;
 
             if (!_hasTimeScaleButtons)
             {
@@ -257,11 +243,6 @@ namespace Assets.Scripts.Guis
                 HelpLogs.Warn("Gui", "Missing camera zoom buttons.");
             }
 
-            if (!_hasCanvasToggleButton)
-            {
-                HelpLogs.Warn("Gui", "Missing canvas toggle button.");
-            }
-
             HelpLogs.Log("Gui", $"Allocated {textsByName.Count} texts on canvas {_canvas.name}");
             runtimeWidgetsAllocated = true;
         }
@@ -278,7 +259,6 @@ namespace Assets.Scripts.Guis
             AppVersionText = null;
             TimeScaleValueText = null;
             VisualPresetValueText = null;
-            CanvasToggleValueText = null;
 
             OrbitLinesToggle = null;
             SpinAxisToggle = null;
@@ -293,7 +273,6 @@ namespace Assets.Scripts.Guis
             CameraOrbitRightButton = null;
             CameraZoomInButton = null;
             CameraZoomOutButton = null;
-            CanvasToggleButton = null;
 
             HelpLogs.Log("Gui", "Deallocated interaction widgets");
             runtimeWidgetsAllocated = false;

@@ -170,7 +170,6 @@ Text labels (`TextMeshProUGUI`):
 - `TimeScaleValueText`
 - `VisualPresetValueText`
 - `AppVersionText`
-- `CanvasToggleValueText`
 
 Buttons (`UnityEngine.UI.Button`):
 - `TimeScaleMinusButton`
@@ -183,14 +182,11 @@ Buttons (`UnityEngine.UI.Button`):
 - `CameraOrbitRightButton`
 - `CameraZoomInButton`
 - `CameraZoomOutButton`
-- `CanvasToggleButton`
 
 Toggles (`UnityEngine.UI.Toggle`):
 - `OrbitLinesToggle`
 - `SpinAxisToggle`
 - `WorldUpToggle`
-
-The canvas visibility toggle hides only panels registered by the `Panel` enum, so keep `CanvasToggleButton` outside those panels if you want it always visible.
 
 Control levels (names and values):
 
