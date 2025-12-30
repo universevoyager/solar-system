@@ -14,6 +14,7 @@ namespace Assets.Scripts.Guis
         [SerializeField] private Toggle? orbitLinesToggle;
         [SerializeField] private Toggle? spinAxisToggle;
         [SerializeField] private Toggle? worldUpToggle;
+        [SerializeField] private Toggle? spinDirectionToggle;
         [SerializeField] private Button? timeScaleMinusButton;
         [SerializeField] private Button? timeScalePlusButton;
         [SerializeField] private Button? visualPresetMinusButton;
@@ -24,6 +25,7 @@ namespace Assets.Scripts.Guis
         [SerializeField] private Button? cameraOrbitRightButton;
         [SerializeField] private Button? cameraZoomInButton;
         [SerializeField] private Button? cameraZoomOutButton;
+        [SerializeField] private Toggle? planetXToggle;
         #endregion
 
         #region Runtime State
@@ -31,11 +33,17 @@ namespace Assets.Scripts.Guis
         #endregion
 
         #region Unity Lifecycle
+        /// <summary>
+        /// Bind UI events once the scene is ready.
+        /// </summary>
         private void Start()
         {
             Bind();
         }
 
+        /// <summary>
+        /// Unbind UI events on teardown.
+        /// </summary>
         private void OnDestroy()
         {
             Unbind();
@@ -72,6 +80,11 @@ namespace Assets.Scripts.Guis
             if (worldUpToggle == null)
             {
                 worldUpToggle = Gui.WorldUpToggle;
+            }
+
+            if (spinDirectionToggle == null)
+            {
+                spinDirectionToggle = Gui.SpinDirectionToggle;
             }
 
             if (timeScaleMinusButton == null)
@@ -124,6 +137,11 @@ namespace Assets.Scripts.Guis
                 cameraZoomOutButton = Gui.CameraZoomOutButton;
             }
 
+            if (planetXToggle == null)
+            {
+                planetXToggle = Gui.HypotheticalToggle;
+            }
+
             bool boundAny = false;
 
             if (orbitLinesToggle != null)
@@ -154,6 +172,16 @@ namespace Assets.Scripts.Guis
             else
             {
                 HelpLogs.Warn("Gui", "Missing WorldUpToggle for runtime events.");
+            }
+
+            if (spinDirectionToggle != null)
+            {
+                spinDirectionToggle.onValueChanged.AddListener(HandleSpinDirectionChanged);
+                boundAny = true;
+            }
+            else
+            {
+                HelpLogs.Warn("Gui", "Missing SpinDirectionToggle for runtime events.");
             }
 
             bool timeScaleButtonsBound = false;
@@ -240,6 +268,12 @@ namespace Assets.Scripts.Guis
                 HelpLogs.Warn("Gui", "Missing camera zoom buttons.");
             }
 
+            if (planetXToggle != null)
+            {
+                planetXToggle.onValueChanged.AddListener(HandlePlanetXToggleChanged);
+                boundAny = true;
+            }
+
             isBound =
                 boundAny ||
                 timeScaleButtonsBound ||
@@ -271,6 +305,11 @@ namespace Assets.Scripts.Guis
             if (worldUpToggle != null)
             {
                 worldUpToggle.onValueChanged.RemoveListener(HandleWorldUpChanged);
+            }
+
+            if (spinDirectionToggle != null)
+            {
+                spinDirectionToggle.onValueChanged.RemoveListener(HandleSpinDirectionChanged);
             }
 
             if (timeScaleMinusButton != null)
@@ -323,6 +362,11 @@ namespace Assets.Scripts.Guis
                 cameraZoomOutButton.onClick.RemoveListener(HandleCameraZoomOut);
             }
 
+            if (planetXToggle != null)
+            {
+                planetXToggle.onValueChanged.RemoveListener(HandlePlanetXToggleChanged);
+            }
+
             isBound = false;
         }
         #endregion
@@ -341,6 +385,11 @@ namespace Assets.Scripts.Guis
         private void HandleWorldUpChanged(bool _enabled)
         {
             Gui.NotifyWorldUpToggled(_enabled);
+        }
+
+        private void HandleSpinDirectionChanged(bool _enabled)
+        {
+            Gui.NotifySpinDirectionToggled(_enabled);
         }
 
         private void HandleTimeScaleMinus()
@@ -375,11 +424,13 @@ namespace Assets.Scripts.Guis
 
         private void HandleCameraOrbitLeft()
         {
+            // Intentional swap for natural screen-space feel.
             Gui.NotifyCameraOrbitStepRequested(Vector2.right);
         }
 
         private void HandleCameraOrbitRight()
         {
+            // Intentional swap for natural screen-space feel.
             Gui.NotifyCameraOrbitStepRequested(Vector2.left);
         }
 
@@ -391,6 +442,11 @@ namespace Assets.Scripts.Guis
         private void HandleCameraZoomOut()
         {
             Gui.NotifyCameraZoomStepRequested(-1);
+        }
+
+        private void HandlePlanetXToggleChanged(bool _enabled)
+        {
+            Gui.NotifyHypotheticalToggleChanged(_enabled);
         }
 
         #endregion

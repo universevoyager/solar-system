@@ -11,6 +11,7 @@ namespace Assets.Scripts.Data
     [Serializable]
     public sealed class MetaData
     {
+        #region Properties
         // Dataset schema version string.
         [JsonProperty("schema_version")]
         public string? SchemaVersion { get; set; }
@@ -38,5 +39,6 @@ namespace Assets.Scripts.Data
         // Source attribution list.
         [JsonProperty("sources")]
         public List<SourceData>? Sources { get; set; }
+        #endregion
     }
 }

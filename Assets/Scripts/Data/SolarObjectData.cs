@@ -10,6 +10,7 @@ namespace Assets.Scripts.Data
     [Serializable]
     public sealed class SolarObjectData
     {
+        #region Properties
         // Unique object id (used for lookup and prefab matching).
         [JsonProperty("id")]
         public string Id { get; set; } = string.Empty;
@@ -33,6 +34,10 @@ namespace Assets.Scripts.Data
         [JsonProperty("is_reference")]
         public bool IsReference { get; set; } = false;
 
+        // Optional flag for hypothetical objects (e.g., Planet X).
+        [JsonProperty("is_hypothetical")]
+        public bool IsHypothetical { get; set; } = false;
+
         [JsonProperty("truth_physical")]
         public TruthPhysicalData? TruthPhysical { get; set; }
 
@@ -49,5 +54,14 @@ namespace Assets.Scripts.Data
         // Optional spawn overrides.
         [JsonProperty("spawn")]
         public SpawnData? Spawn { get; set; }
+
+        // Optional per-object override for aligning moon orbits to primary tilt.
+        [JsonProperty("align_to_primary_tilt")]
+        public bool? AlignOrbitToPrimaryTilt { get; set; }
+
+        // Optional per-object override for tidal locking.
+        [JsonProperty("tidal_lock")]
+        public bool? TidalLock { get; set; }
+        #endregion
     }
 }

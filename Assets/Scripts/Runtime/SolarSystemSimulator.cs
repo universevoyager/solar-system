@@ -1,11 +1,13 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using Assets.Scripts.Data;
 using Assets.Scripts.Loading;
 using Assets.Scripts.Guis;
 using Assets.Scripts.Helpers.Debugging;
+using TMPro;
 
 namespace Assets.Scripts.Runtime
 {
@@ -17,9 +19,7 @@ namespace Assets.Scripts.Runtime
         #region Serialized Fields
         [Header("JSON (Resources)")]
         // Resources path (no extension) to the solar system dataset.
-        [SerializeField] private string resourcesJsonPathWithoutExtension = "SolarSystemData";
-        // Optional keplerian dataset for the Realistic preset.
-        [SerializeField] private string realisticJsonPathWithoutExtension =
+        [SerializeField] private string resourcesJsonPathWithoutExtension =
             "SolarSystemData_J2000_Keplerian_all_moons";
 
         [Header("Prefabs (Resources)")]
@@ -39,8 +39,43 @@ namespace Assets.Scripts.Runtime
         [SerializeField] private float sunLightNormalIntensity = 30000.0f;
         [SerializeField] private float sunLightNormalRange = 1000.0f;
         // Minimal visual preset values for the Sun point light.
-        [SerializeField] private float sunLightMinimalIntensity = 15.0f;
+        [SerializeField] private float sunLightMinimalIntensity = 25.0f;
         [SerializeField] private float sunLightMinimalRange = 1000.0f;
+
+        [Header("Hypothetical Objects")]
+        [SerializeField] private bool showHypotheticalObjects = false;
+
+        [Header("Debug")]
+        // Log per-object spawn data after initialization.
+        [SerializeField] private bool logSpawnedSolarObjectData = true;
+
+        [Header("Simulation Scale Profile")]
+        // Scaling knobs used only when the Simulation preset is active.
+        [SerializeField] private float simulationRadiusScaleAll = 0.8f;
+        [SerializeField] private float simulationSmallPlanetRadiusScale = 0.625f;
+        [SerializeField] private float simulationLargePlanetRadiusScale = 1.0f;
+        [SerializeField] private float simulationMoonRadiusScale = 0.4f;
+        [SerializeField] private float simulationDwarfRadiusScale = 0.625f;
+        [SerializeField] private float simulationOtherRadiusScale = 0.8f;
+        // Threshold (km) that separates small vs large planet scaling.
+        [SerializeField] private float simulationSmallPlanetRadiusKmThreshold = 9000.0f;
+        // Extra spacing bias for inner planets (order-based).
+        [SerializeField] private float simulationInnerPlanetSpacingBias = 0.15f;
+        // Highest order index considered "inner" for spacing bias.
+        [SerializeField] private int simulationInnerPlanetMaxOrder = 4;
+        [SerializeField] private float simulationPlanetDistanceScaleAll = 1.0f;
+        // Extra distance scaling for outer planets.
+        [SerializeField] private float simulationOuterPlanetDistanceScale = 2.0f;
+        // Lowest order index considered "outer" for scaling.
+        [SerializeField] private int simulationOuterPlanetMinOrder = 5;
+        // AU cutoff to treat dwarf planets as outer objects.
+        [SerializeField] private float simulationDwarfOuterDistanceAuThreshold = 5.0f;
+        // Extra distance scaling for inner dwarf planets.
+        [SerializeField] private float simulationInnerDwarfDistanceScale = 1.45f;
+        // Per-moon distance multiplier used only in Simulation.
+        [SerializeField] private float simulationMoonDistanceScale = 0.9f;
+        // Align moon orbits to primary axial tilt unless overridden per moon.
+        [SerializeField] private bool alignMoonOrbitsToPrimaryTilt = true;
 
         #endregion
 
@@ -49,7 +84,6 @@ namespace Assets.Scripts.Runtime
         private double simulationTimeSeconds = 0.0;
         // Loaded datasets and lookup tables.
         private SolarSystemJsonLoader.Result? simulationDatabase;
-        private SolarSystemJsonLoader.Result? realisticDatabase;
         private SolarSystemJsonLoader.Result? activeDatabase;
 
         // Spawned SolarObject instances keyed by id.
@@ -75,6 +109,11 @@ namespace Assets.Scripts.Runtime
         public event Action<int>? VisualPresetChanged;
 
         /// <summary>
+        /// Current visibility state for hypothetical objects.
+        /// </summary>
+        public bool ShowHypotheticalObjects => showHypotheticalObjects;
+
+        /// <summary>
         /// Current visual preset index.
         /// </summary>
         public int VisualPresetLevelIndex => visualPresetLevelIndex;
@@ -97,6 +136,10 @@ namespace Assets.Scripts.Runtime
 
         // Time label update throttle.
         private float timeLabelUpdateTimer = 0.0f;
+
+        // One-time guard for spawn data logging.
+        private bool spawnDataLogged = false;
+
         #endregion
 
         #region Runtime Control Levels
@@ -104,6 +147,7 @@ namespace Assets.Scripts.Runtime
         private readonly string[] visualPresetLevelNames = { "Realistic", "Simulation" };
 
         // Level values mapped to control indices.
+        // Index 0 = default/realistic, Index 1 = simulation (unless noted).
         private readonly float[] timeScaleLevelValues = new float[4];
         private readonly float[] visualPresetDistanceValues = new float[2];
         private readonly float[] visualPresetRadiusValues = new float[2];
@@ -135,8 +179,7 @@ namespace Assets.Scripts.Runtime
                 return;
             }
 
-            realisticDatabase = LoadRealisticDatabase(simulationDatabase);
-            activeDatabase = GetDatabaseForPreset(visualPresetLevelIndex);
+            activeDatabase = simulationDatabase;
 
             if (activeDatabase == null)
             {
@@ -148,6 +191,7 @@ namespace Assets.Scripts.Runtime
             LoadPrefabsFromResources();
 
             ApplyDatabase(activeDatabase, visualPresetLevelIndex, true);
+            ApplyHypotheticalVisibility();
             SolarObjectsReady?.Invoke(orderedSolarObjects);
 
             HelpLogs.Log("Simulator", $"Ready. Objects spawned: {instancesById.Count}");
@@ -168,6 +212,8 @@ namespace Assets.Scripts.Runtime
             Gui.OrbitLinesToggled += HandleOrbitLinesToggled;
             Gui.SpinAxisToggled += HandleSpinAxisToggled;
             Gui.WorldUpToggled += HandleWorldUpToggled;
+            Gui.SpinDirectionToggled += HandleSpinDirectionToggled;
+            Gui.HypotheticalToggleChanged += HandleHypotheticalToggleChanged;
         }
 
         /// <summary>
@@ -187,6 +233,7 @@ namespace Assets.Scripts.Runtime
             UpdateAppVersionText();
             ApplyVisualPresetLevel(visualPresetLevelIndex, true);
             UpdateTimeScaleText();
+            UpdateHypotheticalToggleText();
         }
 
         /// <summary>
@@ -205,6 +252,8 @@ namespace Assets.Scripts.Runtime
             Gui.OrbitLinesToggled -= HandleOrbitLinesToggled;
             Gui.SpinAxisToggled -= HandleSpinAxisToggled;
             Gui.WorldUpToggled -= HandleWorldUpToggled;
+            Gui.SpinDirectionToggled -= HandleSpinDirectionToggled;
+            Gui.HypotheticalToggleChanged -= HandleHypotheticalToggleChanged;
 
             Gui.UnInitialize();
         }
@@ -259,6 +308,23 @@ namespace Assets.Scripts.Runtime
                 visualContext.MoonClearanceUnity = _defaults.MoonClearanceUnity;
             }
 
+            visualContext.SimulationRadiusScaleAll = simulationRadiusScaleAll;
+            visualContext.SimulationSmallPlanetRadiusScale = simulationSmallPlanetRadiusScale;
+            visualContext.SimulationLargePlanetRadiusScale = simulationLargePlanetRadiusScale;
+            visualContext.SimulationMoonRadiusScale = simulationMoonRadiusScale;
+            visualContext.SimulationDwarfRadiusScale = simulationDwarfRadiusScale;
+            visualContext.SimulationOtherRadiusScale = simulationOtherRadiusScale;
+            visualContext.SimulationSmallPlanetRadiusKmThreshold = simulationSmallPlanetRadiusKmThreshold;
+            visualContext.SimulationInnerPlanetSpacingBias = simulationInnerPlanetSpacingBias;
+            visualContext.SimulationInnerPlanetMaxOrder = simulationInnerPlanetMaxOrder;
+            visualContext.SimulationPlanetDistanceScaleAll = simulationPlanetDistanceScaleAll;
+            visualContext.SimulationOuterPlanetDistanceScale = simulationOuterPlanetDistanceScale;
+            visualContext.SimulationOuterPlanetMinOrder = simulationOuterPlanetMinOrder;
+            visualContext.SimulationDwarfOuterDistanceAuThreshold = simulationDwarfOuterDistanceAuThreshold;
+            visualContext.SimulationInnerDwarfDistanceScale = simulationInnerDwarfDistanceScale;
+            visualContext.SimulationMoonDistanceScale = simulationMoonDistanceScale;
+            visualContext.AlignMoonOrbitsToPrimaryTilt = alignMoonOrbitsToPrimaryTilt;
+
             if (_db.ById.TryGetValue("sun", out SolarObjectData _sunData))
             {
                 visualContext.ReferenceSolarObjectRadiusKm = _sunData.TruthPhysical?.MeanRadiusKm ?? 695700.0;
@@ -266,42 +332,17 @@ namespace Assets.Scripts.Runtime
         }
 
         #region Dataset Management
-        private SolarSystemJsonLoader.Result? LoadRealisticDatabase(SolarSystemJsonLoader.Result _fallback)
-        {
-            if (string.IsNullOrWhiteSpace(realisticJsonPathWithoutExtension))
-            {
-                return _fallback;
-            }
-
-            SolarSystemJsonLoader.Result? _result =
-                SolarSystemJsonLoader.LoadOrLog(realisticJsonPathWithoutExtension);
-            if (_result == null)
-            {
-                HelpLogs.Warn(
-                    "Simulator",
-                    $"Realistic dataset '{realisticJsonPathWithoutExtension}' failed to load. Using simulation dataset."
-                );
-                return _fallback;
-            }
-
-            return _result;
-        }
-
+        /// <summary>
+        /// Resolve the dataset to use for a given preset index.
+        /// </summary>
         private SolarSystemJsonLoader.Result? GetDatabaseForPreset(int _presetIndex)
         {
-            if (!enableRuntimeControls)
-            {
-                return simulationDatabase;
-            }
-
-            if (_presetIndex == 0)
-            {
-                return realisticDatabase ?? simulationDatabase;
-            }
-
             return simulationDatabase;
         }
 
+        /// <summary>
+        /// Switch the active dataset for a preset when needed.
+        /// </summary>
         private bool EnsureActiveDatabaseForPreset(int _presetIndex)
         {
             SolarSystemJsonLoader.Result? _target = GetDatabaseForPreset(_presetIndex);
@@ -314,6 +355,9 @@ namespace Assets.Scripts.Runtime
             return true;
         }
 
+        /// <summary>
+        /// Apply a dataset and refresh or respawn solar objects as required.
+        /// </summary>
         private void ApplyDatabase(SolarSystemJsonLoader.Result _db, int _presetIndex, bool _forceRespawn)
         {
             activeDatabase = _db;
@@ -330,6 +374,8 @@ namespace Assets.Scripts.Runtime
 
             InitializeAllTwoPass(_db);
             RebuildOrderedSolarObjects(_db);
+            ApplyHypotheticalVisibility();
+            LogSpawnedSolarObjects(_db);
 
             for (int _i = 0; _i < orderedSolarObjects.Count; _i++)
             {
@@ -337,6 +383,9 @@ namespace Assets.Scripts.Runtime
             }
         }
 
+        /// <summary>
+        /// Decide whether existing instances can be reinitialized in place.
+        /// </summary>
         private bool CanReinitializeInPlace(SolarSystemJsonLoader.Result _db)
         {
             if (instancesById.Count == 0)
@@ -360,6 +409,9 @@ namespace Assets.Scripts.Runtime
             return true;
         }
 
+        /// <summary>
+        /// Destroy all spawned solar objects and clear cached lists.
+        /// </summary>
         private void DestroyAllInstances()
         {
             foreach (KeyValuePair<string, SolarObject> _pair in instancesById)
@@ -374,6 +426,9 @@ namespace Assets.Scripts.Runtime
             orderedSolarObjects.Clear();
         }
 
+        /// <summary>
+        /// Rebuild the ordered list used by UI and focus systems.
+        /// </summary>
         private void RebuildOrderedSolarObjects(SolarSystemJsonLoader.Result _db)
         {
             orderedSolarObjects.Clear();
@@ -407,6 +462,206 @@ namespace Assets.Scripts.Runtime
                     orderedSolarObjects.Add(_instance);
                 }
             }
+        }
+        #endregion
+
+        #region Debug Logging
+        /// <summary>
+        /// Log the resolved spawn data for each solar object once at startup.
+        /// </summary>
+        private void LogSpawnedSolarObjects(SolarSystemJsonLoader.Result _db)
+        {
+            if (!logSpawnedSolarObjectData || spawnDataLogged)
+            {
+                return;
+            }
+
+            spawnDataLogged = true;
+
+            List<SolarObjectData> _sorted = new List<SolarObjectData>(_db.ById.Values);
+            _sorted.Sort((_a, _b) =>
+            {
+                int _ar = _a.IsReference ? 0 : 1;
+                int _br = _b.IsReference ? 0 : 1;
+                if (_ar != _br)
+                {
+                    return _ar.CompareTo(_br);
+                }
+
+                int _ao = _a.OrderFromSun ?? int.MaxValue;
+                int _bo = _b.OrderFromSun ?? int.MaxValue;
+                int _cmp = _ao.CompareTo(_bo);
+                if (_cmp != 0)
+                {
+                    return _cmp;
+                }
+
+                return string.Compare(_a.Id, _b.Id, StringComparison.OrdinalIgnoreCase);
+            });
+
+            for (int _i = 0; _i < _sorted.Count; _i++)
+            {
+                SolarObjectData _data = _sorted[_i];
+                HelpLogs.Log("Simulator", BuildSpawnLog(_data));
+            }
+        }
+
+        /// <summary>
+        /// Build a debug log line for the dataset values used by a solar object.
+        /// </summary>
+        private string BuildSpawnLog(SolarObjectData _data)
+        {
+            string _name = string.IsNullOrWhiteSpace(_data.DisplayName) ? _data.Id : _data.DisplayName;
+            TruthPhysicalData? _physical = _data.TruthPhysical;
+            TruthSpinData? _spin = _data.TruthSpin;
+            TruthOrbitData? _orbit = _data.TruthOrbit;
+            VisualDefaultsData? _visual = _data.VisualDefaults;
+            SpawnData? _spawn = _data.Spawn;
+
+            string _spinPeriod = FormatSpinPeriod(_spin);
+            string _spinDir = _spin != null ? FormatSpinDirection(_spin.SpinDirection) : "n/a";
+            string _tilt = _spin?.AxialTiltDeg.HasValue == true ? $"{_spin.AxialTiltDeg:0.###} deg" : "n/a";
+            string _orbitPeriod = FormatOrbitPeriod(_orbit);
+            string _semiMajor = FormatSemiMajorAxis(_orbit);
+            string _ecc = _orbit?.Eccentricity.HasValue == true ? $"{_orbit.Eccentricity:0.#####}" : "n/a";
+            string _inc = _orbit?.InclinationDeg.HasValue == true ? $"{_orbit.InclinationDeg:0.###} deg" : "n/a";
+            string _lan = _orbit?.LongitudeAscendingNodeDeg.HasValue == true
+                ? $"{_orbit.LongitudeAscendingNodeDeg:0.###} deg"
+                : "n/a";
+            string _arg = _orbit?.ArgumentPeriapsisDeg.HasValue == true
+                ? $"{_orbit.ArgumentPeriapsisDeg:0.###} deg"
+                : "n/a";
+            string _mean = _orbit?.MeanAnomalyDeg.HasValue == true
+                ? $"{_orbit.MeanAnomalyDeg:0.###} deg"
+                : "n/a";
+
+            StringBuilder _sb = new StringBuilder(256);
+            _sb.AppendLine($"Spawn data: {_name} ({_data.Id})");
+            _sb.AppendLine($"Type: {_data.Type} | Primary: {_data.PrimaryId ?? "none"} | Order: {_data.OrderFromSun?.ToString() ?? "n/a"} | Hypothetical: {_data.IsHypothetical}");
+            _sb.AppendLine($"Physical: mean_radius_km={_physical?.MeanRadiusKm?.ToString("0.###") ?? "n/a"}");
+            _sb.AppendLine($"Spin: period={_spinPeriod} | direction={_spinDir} | axial_tilt={_tilt}");
+            _sb.AppendLine($"Orbit: period={_orbitPeriod} | a={_semiMajor} | e={_ecc} | i={_inc} | LAN={_lan} | arg_periapsis={_arg} | mean_anomaly={_mean}");
+            string _radiusMult = _visual != null ? _visual.RadiusMultiplier.ToString("0.###") : "n/a";
+            string _distanceMult = _visual != null ? _visual.DistanceMultiplier.ToString("0.###") : "n/a";
+            _sb.AppendLine($"Visual defaults: radius_multiplier={_radiusMult} | distance_multiplier={_distanceMult}");
+            _sb.AppendLine($"Spawn: initial_angle_deg={_spawn?.InitialAngleDeg?.ToString("0.###") ?? "n/a"} | position_unity={FormatArray(_spawn?.PositionUnity)} | scale_unity={FormatArray(_spawn?.ScaleUnity)}");
+            _sb.AppendLine($"Tidal lock: override={FormatNullableBoolOrAuto(_data.TidalLock)} | align_to_primary_tilt={FormatNullableBoolOrAuto(_data.AlignOrbitToPrimaryTilt)}");
+            return _sb.ToString().TrimEnd();
+        }
+
+        /// <summary>
+        /// Format a spin period from the dataset.
+        /// </summary>
+        private static string FormatSpinPeriod(TruthSpinData? _spin)
+        {
+            if (_spin == null)
+            {
+                return "n/a";
+            }
+
+            if (_spin.SiderealRotationPeriodHours.HasValue)
+            {
+                return $"{_spin.SiderealRotationPeriodHours:0.###} h";
+            }
+
+            if (_spin.SiderealRotationPeriodDays.HasValue)
+            {
+                return $"{_spin.SiderealRotationPeriodDays:0.###} d";
+            }
+
+            return "n/a";
+        }
+
+        /// <summary>
+        /// Format orbit period in days (or years with day conversion).
+        /// </summary>
+        private static string FormatOrbitPeriod(TruthOrbitData? _orbit)
+        {
+            if (_orbit == null)
+            {
+                return "n/a";
+            }
+
+            if (_orbit.OrbitalPeriodDays.HasValue)
+            {
+                return $"{_orbit.OrbitalPeriodDays:0.###} d";
+            }
+
+            if (_orbit.OrbitalPeriodYears.HasValue)
+            {
+                double _years = _orbit.OrbitalPeriodYears.Value;
+                double _days = _years * 365.25;
+                return $"{_years:0.###} y ({_days:0.###} d)";
+            }
+
+            return "n/a";
+        }
+
+        /// <summary>
+        /// Format semi-major axis values for logging.
+        /// </summary>
+        private static string FormatSemiMajorAxis(TruthOrbitData? _orbit)
+        {
+            if (_orbit == null)
+            {
+                return "n/a";
+            }
+
+            if (_orbit.SemiMajorAxisAU.HasValue)
+            {
+                return $"{_orbit.SemiMajorAxisAU:0.######} AU";
+            }
+
+            if (_orbit.SemiMajorAxisKm.HasValue)
+            {
+                return $"{_orbit.SemiMajorAxisKm:0.###} km";
+            }
+
+            return "n/a";
+        }
+
+        /// <summary>
+        /// Format spin direction with sign and meaning.
+        /// </summary>
+        private static string FormatSpinDirection(double? _spinDirection)
+        {
+            if (!_spinDirection.HasValue)
+            {
+                return "1 (default/prograde)";
+            }
+
+            return _spinDirection.Value < 0.0 ? "-1 (retrograde)" : "1 (prograde)";
+        }
+
+        /// <summary>
+        /// Format optional boolean values with an auto/default label.
+        /// </summary>
+        private static string FormatNullableBoolOrAuto(bool? _value)
+        {
+            return _value.HasValue ? _value.Value.ToString() : "auto";
+        }
+
+        /// <summary>
+        /// Format a numeric array for logging.
+        /// </summary>
+        private static string FormatArray(double[]? _values)
+        {
+            if (_values == null || _values.Length == 0)
+            {
+                return "n/a";
+            }
+
+            StringBuilder _sb = new StringBuilder();
+            for (int _i = 0; _i < _values.Length; _i++)
+            {
+                if (_i > 0)
+                {
+                    _sb.Append(", ");
+                }
+                _sb.Append(_values[_i].ToString("0.###"));
+            }
+
+            return $"({_sb})";
         }
         #endregion
 
@@ -504,7 +759,7 @@ namespace Assets.Scripts.Runtime
                     continue;
                 }
 
-                _pair.Value.Initialize(_data, null, visualContext);
+                _pair.Value.Initialize(_data, null, null, visualContext);
             }
 
             if (instancesById.TryGetValue("sun", out SolarObject _sun))
@@ -522,13 +777,15 @@ namespace Assets.Scripts.Runtime
                 }
 
                 Transform? _primaryTransform = null;
+                SolarObject? _primarySolarObject = null;
                 if (!string.IsNullOrWhiteSpace(_data.PrimaryId) &&
                     instancesById.TryGetValue(_data.PrimaryId, out SolarObject _primary))
                 {
                     _primaryTransform = _primary.transform;
+                    _primarySolarObject = _primary;
                 }
 
-                _pair.Value.Initialize(_data, _primaryTransform, visualContext);
+                _pair.Value.Initialize(_data, _primaryTransform, _primarySolarObject, visualContext);
             }
         }
 
@@ -578,6 +835,9 @@ namespace Assets.Scripts.Runtime
             visualPresetOrbitSegmentsValues[1] = 64;
         }
 
+        /// <summary>
+        /// Apply a preset to the shared visual context.
+        /// </summary>
         private void ApplyVisualPresetValues(int _levelIndex)
         {
             int _clamped = Mathf.Clamp(_levelIndex, 0, visualPresetLevelNames.Length - 1);
@@ -587,8 +847,12 @@ namespace Assets.Scripts.Runtime
             visualContext.OrbitPathSegments = visualPresetOrbitSegmentsValues[_clamped];
             visualContext.RuntimeLineWidthScale = _clamped == 0 ? 1.0f : 0.25f;
             visualContext.UseVisualDefaults = !enableRuntimeControls || !_isRealistic;
+            visualContext.UseSimulationScaleProfile = enableRuntimeControls && !_isRealistic;
         }
 
+        /// <summary>
+        /// Initialize runtime UI state and sync toggle defaults.
+        /// </summary>
         private void SetupRuntimeGui()
         {
             if (!enableRuntimeControls)
@@ -610,17 +874,29 @@ namespace Assets.Scripts.Runtime
 
             if (Gui.OrbitLinesToggle != null)
             {
-                Gui.OrbitLinesToggle.isOn = visualContext.ShowOrbitLines;
+                visualContext.ShowOrbitLines = Gui.OrbitLinesToggle.isOn;
             }
 
             if (Gui.SpinAxisToggle != null)
             {
-                Gui.SpinAxisToggle.isOn = visualContext.ShowSpinAxisLines;
+                visualContext.ShowSpinAxisLines = Gui.SpinAxisToggle.isOn;
             }
 
             if (Gui.WorldUpToggle != null)
             {
-                Gui.WorldUpToggle.isOn = visualContext.ShowWorldUpLines;
+                visualContext.ShowWorldUpLines = Gui.WorldUpToggle.isOn;
+            }
+
+            if (Gui.SpinDirectionToggle != null)
+            {
+                visualContext.ShowSpinDirectionLines = Gui.SpinDirectionToggle.isOn;
+            }
+
+            if (Gui.HypotheticalToggle != null)
+            {
+                showHypotheticalObjects = Gui.HypotheticalToggle.isOn;
+                ApplyHypotheticalVisibility();
+                SolarObjectsReady?.Invoke(orderedSolarObjects);
             }
         }
 
@@ -720,6 +996,41 @@ namespace Assets.Scripts.Runtime
         }
 
         /// <summary>
+        /// Toggle spin-direction arc rendering for all objects.
+        /// </summary>
+        private void HandleSpinDirectionToggled(bool _enabled)
+        {
+            if (!guiInitialized)
+            {
+                return;
+            }
+
+            visualContext.ShowSpinDirectionLines = _enabled;
+            MarkAllLineStylesDirty();
+        }
+
+        /// <summary>
+        /// Handle the Planet X toggle and update visibility.
+        /// </summary>
+        private void HandleHypotheticalToggleChanged(bool _enabled)
+        {
+            if (!guiInitialized)
+            {
+                return;
+            }
+
+            if (showHypotheticalObjects == _enabled)
+            {
+                return;
+            }
+
+            showHypotheticalObjects = _enabled;
+            ApplyHypotheticalVisibility();
+            UpdateHypotheticalToggleText();
+            SolarObjectsReady?.Invoke(orderedSolarObjects);
+        }
+
+        /// <summary>
         /// Re-apply visual scaling to all objects.
         /// </summary>
         private void RefreshAllVisuals()
@@ -738,6 +1049,26 @@ namespace Assets.Scripts.Runtime
             foreach (KeyValuePair<string, SolarObject> _pair in instancesById)
             {
                 _pair.Value.MarkLineStylesDirty();
+            }
+        }
+
+        /// <summary>
+        /// Activate or hide hypothetical solar objects in the scene.
+        /// </summary>
+        private void ApplyHypotheticalVisibility()
+        {
+            foreach (KeyValuePair<string, SolarObject> _pair in instancesById)
+            {
+                SolarObject _object = _pair.Value;
+                if (!_object.IsHypothetical)
+                {
+                    continue;
+                }
+
+                if (_object.gameObject.activeSelf != showHypotheticalObjects)
+                {
+                    _object.gameObject.SetActive(showHypotheticalObjects);
+                }
             }
         }
 
@@ -783,6 +1114,26 @@ namespace Assets.Scripts.Runtime
             ];
 
             Gui.VisualPresetValueText.text = _label;
+        }
+
+        /// <summary>
+        /// Update the Planet X toggle label text.
+        /// </summary>
+        private void UpdateHypotheticalToggleText()
+        {
+            TextMeshProUGUI? _text = null;
+            if (Gui.HypotheticalToggle != null)
+            {
+                Gui.HypotheticalToggle.SetIsOnWithoutNotify(showHypotheticalObjects);
+                _text = Gui.HypotheticalToggle.GetComponentInChildren<TextMeshProUGUI>(true);
+            }
+
+            if (_text == null)
+            {
+                return;
+            }
+
+            _text.text = showHypotheticalObjects ? "Planet X: On" : "Planet X: Off";
         }
 
         /// <summary>

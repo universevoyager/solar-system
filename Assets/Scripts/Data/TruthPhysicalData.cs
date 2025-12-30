@@ -10,8 +10,10 @@ namespace Assets.Scripts.Data
     [Serializable]
     public sealed class TruthPhysicalData
     {
+        #region Properties
         // Mean radius in kilometers.
         [JsonProperty("mean_radius_km")]
         public double? MeanRadiusKm { get; set; }
+        #endregion
     }
 }

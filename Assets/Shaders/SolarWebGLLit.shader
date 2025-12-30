@@ -4,14 +4,10 @@ Shader "MarinsPlayLab/SolarWebGLLit"
     {
         _BaseMap ("Base Map", 2D) = "white" {}
         _BaseColor ("Base Color", Color) = (1,1,1,1)
-
         _SpecColor ("Spec Color", Color) = (0.1,0.1,0.1,1)
         _Smoothness ("Smoothness", Range(0,1)) = 0.2
-
-        // Keep this at 0 for planets if you want a hard night-side.
         _Ambient ("Ambient (planets -> 0)", Range(0,1)) = 0
 
-        // Emission (Sun material: set strength > 0)
         _EmissionMap ("Emission Map", 2D) = "black" {}
         [HDR]_EmissionColor ("Emission Color", Color) = (0,0,0,0)
         _EmissionStrength ("Emission Strength", Range(0,200)) = 0
@@ -26,30 +22,27 @@ Shader "MarinsPlayLab/SolarWebGLLit"
             Name "Forward"
             Tags { "LightMode"="UniversalForward" }
 
+            ZWrite On
+            ZTest LEqual
+            Cull Back
+
             HLSLPROGRAM
             #pragma target 3.0
             #pragma vertex vert
             #pragma fragment frag
 
-            // Additional lights (Point/Spot) in Forward
-            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHTS
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX
 
-            // Main light shadows (only matters if you have a main directional light)
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
-
-            // Optional: additional light shadows (Point/Spot shadow maps).
-            // If this makes WebGL compilation fail again, comment it out.
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
-            TEXTURE2D(_BaseMap);
-            SAMPLER(sampler_BaseMap);
-
-            TEXTURE2D(_EmissionMap);
-            SAMPLER(sampler_EmissionMap);
+            TEXTURE2D(_BaseMap);     SAMPLER(sampler_BaseMap);
+            TEXTURE2D(_EmissionMap); SAMPLER(sampler_EmissionMap);
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseColor;
@@ -74,7 +67,9 @@ Shader "MarinsPlayLab/SolarWebGLLit"
                 float2 uv          : TEXCOORD0;
                 float3 normalWS    : TEXCOORD1;
                 float3 positionWS  : TEXCOORD2;
-                float4 shadowCoord : TEXCOORD3; // for main-light shadows (directional)
+                float4 shadowCoord : TEXCOORD3;
+
+                half3  vertexAddLit : TEXCOORD4; // when _ADDITIONAL_LIGHTS_VERTEX
             };
 
             Varyings vert (Attributes IN)
@@ -82,12 +77,17 @@ Shader "MarinsPlayLab/SolarWebGLLit"
                 Varyings OUT;
                 VertexPositionInputs posInputs = GetVertexPositionInputs(IN.positionOS.xyz);
 
-                OUT.positionCS = posInputs.positionCS;
-                OUT.positionWS = posInputs.positionWS;
-                OUT.normalWS   = TransformObjectToWorldNormal(IN.normalOS);
-                OUT.uv         = IN.uv;
-
+                OUT.positionCS  = posInputs.positionCS;
+                OUT.positionWS  = posInputs.positionWS;
+                OUT.normalWS    = TransformObjectToWorldNormal(IN.normalOS);
+                OUT.uv          = IN.uv;
                 OUT.shadowCoord = GetShadowCoord(posInputs);
+
+                OUT.vertexAddLit = half3(0,0,0);
+                #if defined(_ADDITIONAL_LIGHTS_VERTEX)
+                    OUT.vertexAddLit = VertexLighting(OUT.positionWS, normalize(OUT.normalWS));
+                #endif
+
                 return OUT;
             }
 
@@ -100,48 +100,44 @@ Shader "MarinsPlayLab/SolarWebGLLit"
 
             half4 frag (Varyings IN) : SV_Target
             {
-                half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv) * _BaseColor;
+                half3 albedoRgb = (SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv) * _BaseColor).rgb;
 
                 half3 N = normalize(IN.normalWS);
                 half3 V = normalize(GetWorldSpaceViewDir(IN.positionWS));
 
-                // Start with artist ambient (planets: set to 0)
-                half3 color = albedo.rgb * _Ambient;
+                half3 color = albedoRgb * _Ambient;
 
-                // --- Primary "Sun" point light: use additional light 0 (if present) ---
+                // Per-vertex additional lights (if enabled in URP)
+                color += albedoRgb * IN.vertexAddLit;
+
+                // Optional additional lights per-pixel
                 #if defined(_ADDITIONAL_LIGHTS)
                 {
-                    int count = GetAdditionalLightsCount();
-                    if (count > 0)
+                    uint count = GetAdditionalLightsCount();
+                    for (uint li = 0u; li < count; li++)
                     {
-                        // ShadowMask arg (half4(1,1,1,1)) is the common “no baked mask” default.
-                        Light sun = GetAdditionalLight(0u, IN.positionWS, half4(1,1,1,1));
-
-                        half3 specSun;
-                        half3 diffSun = EvalDiffuseSpec(sun, N, V, albedo.rgb, specSun);
-
-                        half att = sun.distanceAttenuation * sun.shadowAttenuation;
-                        color += (diffSun + specSun) * att;
+                        Light l = GetAdditionalLight(li, IN.positionWS, half4(1,1,1,1));
+                        half3 specL;
+                        half3 diffL = EvalDiffuseSpec(l, N, V, albedoRgb, specL);
+                        half att = l.distanceAttenuation * l.shadowAttenuation;
+                        color += (diffL + specL) * att;
                     }
                 }
                 #endif
 
-                // --- Optional main directional light contribution (if you have one) ---
-                // This can help if you decide to use a directional light for shadows, etc.
+                // Main light (directional)
                 {
-                    Light mainL = GetMainLight(IN.shadowCoord); // main shadowed light query :contentReference[oaicite:1]{index=1}
+                    Light mainL = GetMainLight(IN.shadowCoord);
                     half3 specM;
-                    half3 diffM = EvalDiffuseSpec(mainL, N, V, albedo.rgb, specM);
-
+                    half3 diffM = EvalDiffuseSpec(mainL, N, V, albedoRgb, specM);
                     color += (diffM + specM) * mainL.shadowAttenuation;
                 }
 
-                // --- Emission (no keyword; Sun material sets strength > 0) ---
+                // Emission
                 half3 emisTex = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, IN.uv).rgb;
-                half3 emission = emisTex * _EmissionColor.rgb * _EmissionStrength;
-                color += emission;
+                color += emisTex * _EmissionColor.rgb * _EmissionStrength;
 
-                return half4(color, albedo.a);
+                return half4(color, 1.0h);
             }
             ENDHLSL
         }

@@ -10,6 +10,7 @@ namespace Assets.Scripts.Data
     [Serializable]
     public sealed class SpawnData
     {
+        #region Properties
         // Optional world-space position override (Unity units).
         [JsonProperty("position_unity")]
         public double[]? PositionUnity { get; set; }
@@ -18,8 +19,9 @@ namespace Assets.Scripts.Data
         [JsonProperty("scale_unity")]
         public double[]? ScaleUnity { get; set; }
 
-        // Initial orbit angle for circular models (degrees).
+        // Initial mean-anomaly offset applied at spawn (degrees).
         [JsonProperty("initial_angle_deg")]
         public double? InitialAngleDeg { get; set; }
+        #endregion
     }
 }

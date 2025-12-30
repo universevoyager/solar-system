@@ -10,6 +10,7 @@ namespace Assets.Scripts.Data
     [Serializable]
     public sealed class VisualDefaultsData
     {
+        #region Properties
         // Per-object radius multiplier.
         [JsonProperty("radius_multiplier")]
         public double RadiusMultiplier { get; set; } = 1.0;
@@ -17,5 +18,6 @@ namespace Assets.Scripts.Data
         // Per-object distance multiplier.
         [JsonProperty("distance_multiplier")]
         public double DistanceMultiplier { get; set; } = 1.0;
+        #endregion
     }
 }

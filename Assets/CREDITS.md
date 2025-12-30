@@ -6,41 +6,13 @@ Where publishers request attribution (e.g., “Please cite authors”), that req
 
 ---
 
-## Scientific Data Sources (SolarSystemData.json)
+## Scientific Data Sources (SolarSystemData_J2000_Keplerian_all_moons.json)
 
-The JSON dataset includes:
-- mean radii (km),
-- sidereal rotation periods,
-- axial tilts,
-- orbital periods,
-- semi-major axes,
-- selected Keplerian orbital elements for a few solar objects to visualize eccentric/tilted orbits.
-
-Primary sources used (trustworthy references):
-
-### Planets (physical + orbital basics)
-- JPL Solar System Dynamics — Planetary Physical Parameters  
-  https://ssd.jpl.nasa.gov/planets/phys_par.html
-
-### Natural satellites (radii, etc.)
-- JPL Solar System Dynamics — Planetary Satellite Physical Parameters  
-  https://ssd.jpl.nasa.gov/sats/phys_par/
-
-### Keplerian elements / small solar objects (Ceres, Eris, etc.)
-- JPL Solar System Dynamics — Small-Body Database Lookup (SBDB)  
-  https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html
-- JPL Solar System Dynamics — Small-Body Element Tables  
-  https://ssd.jpl.nasa.gov/sb/elem_tables.html
-
-### Pluto reference pages (overview + “by the numbers”)
-- NASA Science — Pluto Facts  
-  https://science.nasa.gov/dwarf-planets/pluto/facts/
-- NASA Solar System Exploration — Pluto By the Numbers  
-  https://solarsystem.nasa.gov/pluto-by-the-numbers/
-
-### Astronomical Unit (AU) definition
-- Observatoire de Paris (IAU 2012 B2 summary) — AU definition (exact)  
-  https://observatoiredeparis.psl.eu/the-new-definition-of-the-astronomical-unit.html
+Sources (JPL/NASA SSD):
+- Planet Keplerian elements (J2000): https://ssd.jpl.nasa.gov/planets/approx_pos.html
+- Planet sidereal orbital periods (years): https://ssd.jpl.nasa.gov/planets/phys_par.html
+- Moon/satellite mean elements at epoch 2000-01-01.5 TDB: https://ssd.jpl.nasa.gov/sats/elem/
+- AU + Julian year definitions used for unit conversion: https://ssd.jpl.nasa.gov/astro_par.html
 
 > Note on accuracy: This project uses simplified orbit models for visualization. It is not intended for ephemeris-grade computation. For accurate ephemerides, use NASA/JPL Horizons.
 
@@ -82,7 +54,7 @@ If you replace any asset, update this file accordingly.
 - Asset (repo): `Venus.jpg` (NASA 3D Resources texture)
 - Source page (includes downloads):
   https://science.nasa.gov/3d-resources/venus/
-- Notes (from source): Stitched from Magellan RADAR imagery; gaps filled with global texture; from the database of JPL/Caltech generated planetary maps.
+- Notes (from source): Stitched from Magellan RADAR imagery, gaps filled with global texture, from the database of JPL/Caltech generated planetary maps.
 - Credit: Not listed on the source page
 
 ## Earth
@@ -156,21 +128,31 @@ If you replace any asset, update this file accordingly.
 - Asset (repo): `Saturn.jpg` (NASA 3D Resources texture)
 - Source page (metadata / notes):
   https://science.nasa.gov/3d-resources/saturn/
-- Notes (from source): Fictional; from the database of JPL/Caltech generated planetary maps.
+- Notes (from source): Fictional, from the database of JPL/Caltech generated planetary maps.
 - Credit: Not listed on the source page
+
+### Saturn Rings
+- Asset (repo): Saturn rings texture used by `SaturnRingsProceduralMesh`
+- Source image: "Expanse of Ice" (PIA08389), Cassini Imaging Science Subsystem (ISS) mosaic of Saturn's rings (released Oct 15, 2007).
+- Credit: NASA/JPL/Space Science Institute.
+- Notes (optional): Modified for use as a ring texture (cropped/unwrap/levels).
+- Source page:
+  https://pds-rings.seti.org/press_releases/pages/PIA08xxx/PIA08389.html
+- Photojournal page:
+  https://photojournal.jpl.nasa.gov/catalog/PIA08389
 
 ### Titan
 - Asset (repo): `Titan.jpg` (NASA 3D Resources texture)
 - Source page (metadata / notes):
   https://science.nasa.gov/3d-resources/saturn-titan/
-- Notes (from source): Fictional; Titan concept with color from Voyager images; from the database of JPL/Caltech generated planetary maps.
+- Notes (from source): Fictional, Titan concept with color from Voyager images, from the database of JPL/Caltech generated planetary maps.
 - Credit: Not listed on the source page
 
 ### Enceladus
 - Asset (repo): `Enceladus.jpg` (NASA 3D Resources texture)
 - Source page (metadata / notes):
   https://science.nasa.gov/3d-resources/saturn-enceladus/
-- Notes (from source): Mosaic from the Voyager imagery; from the database of JPL/Caltech generated planetary maps.
+- Notes (from source): Mosaic from the Voyager imagery, from the database of JPL/Caltech generated planetary maps.
 - Credit: Not listed on the source page
 
 ## Uranus
@@ -183,14 +165,14 @@ If you replace any asset, update this file accordingly.
 - Asset (repo): `Neptune.jpg` (NASA 3D Resources texture)
 - Source page (metadata / credits):
   https://science.nasa.gov/3d-resources/neptune/
-- Notes (from source): Fictional; texture created by Don Davis with cloud features; from the database of JPL/Caltech generated planetary maps.
+- Notes (from source): Fictional, texture created by Don Davis with cloud features, from the database of JPL/Caltech generated planetary maps.
 - Credit (as listed by publisher): Don Davis & JPL/Caltech
 
 ## Pluto
 - Asset (repo): `Pluto.jpg` (NASA 3D Resources texture)
 - Source page (metadata / credits):
   https://science.nasa.gov/3d-resources/pluto/
-- Notes (from source): Fictional; texture map stitched together by David Seal from a painting of Pluto by Pat Rawlings; from the database of JPL/Caltech generated planetary maps.
+- Notes (from source): Fictional, texture map stitched together by David Seal from a painting of Pluto by Pat Rawlings, from the database of JPL/Caltech generated planetary maps.
 - Source (as listed by publisher): Pat Rawlings & JPL/Caltech
 - Credit (as listed by publisher): David Seal
 
@@ -214,4 +196,4 @@ If you replace any asset, update this file accordingly.
 - Source: Google Fonts — Orbitron
   https://fonts.google.com/specimen/Orbitron
 - License file: `Assets/TextMesh Pro/Fonts/Orbitron/OFL.txt`
-- Note: The repository is MIT-licensed, but Orbitron font files are **not** covered by MIT; they remain licensed under OFL-1.1.
+- Note: The repository is MIT-licensed, but Orbitron font files are **not** covered by MIT, they remain licensed under OFL-1.1.

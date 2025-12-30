@@ -9,7 +9,7 @@ using Assets.Scripts.Helpers.Debugging;
 namespace Assets.Scripts.Loading
 {
     /// <summary>
-    /// Loads the SolarSystemData JSON from Resources and validates required fields.
+    /// Loads the solar system JSON from Resources and validates required fields.
     /// </summary>
     public static class SolarSystemJsonLoader
     {
@@ -19,7 +19,9 @@ namespace Assets.Scripts.Loading
         /// </summary>
         public sealed class Result
         {
+            // Parsed dataset root.
             public SolarSystemData Data = new();
+            // Lookup table by solar object id.
             public Dictionary<string, SolarObjectData> ById =
                 new(StringComparer.OrdinalIgnoreCase);
         }
@@ -143,17 +145,24 @@ namespace Assets.Scripts.Loading
                         return null;
                     }
 
-                    if (string.Equals(_o.TruthOrbit.Model, "keplerian", StringComparison.OrdinalIgnoreCase))
+                    string _model = _o.TruthOrbit.Model ?? string.Empty;
+                    if (!string.Equals(_model, "keplerian", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!_o.TruthOrbit.Eccentricity.HasValue ||
-                            !_o.TruthOrbit.InclinationDeg.HasValue ||
-                            !_o.TruthOrbit.LongitudeAscendingNodeDeg.HasValue ||
-                            !_o.TruthOrbit.ArgumentPeriapsisDeg.HasValue ||
-                            !_o.TruthOrbit.MeanAnomalyDeg.HasValue)
-                        {
-                            HelpLogs.Error("JsonLoader", $"'{_o.Id}' keplerian orbit missing elements.");
-                            return null;
-                        }
+                        HelpLogs.Error(
+                            "JsonLoader",
+                            $"'{_o.Id}' orbit model '{_model}' is not supported. Use 'keplerian'."
+                        );
+                        return null;
+                    }
+
+                    if (!_o.TruthOrbit.Eccentricity.HasValue ||
+                        !_o.TruthOrbit.InclinationDeg.HasValue ||
+                        !_o.TruthOrbit.LongitudeAscendingNodeDeg.HasValue ||
+                        !_o.TruthOrbit.ArgumentPeriapsisDeg.HasValue ||
+                        !_o.TruthOrbit.MeanAnomalyDeg.HasValue)
+                    {
+                        HelpLogs.Error("JsonLoader", $"'{_o.Id}' keplerian orbit missing elements.");
+                        return null;
                     }
                 }
             }

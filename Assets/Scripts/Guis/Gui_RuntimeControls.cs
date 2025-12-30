@@ -21,6 +21,8 @@ namespace Assets.Scripts.Guis
         public static Toggle? OrbitLinesToggle { get; private set; }
         public static Toggle? SpinAxisToggle { get; private set; }
         public static Toggle? WorldUpToggle { get; private set; }
+        public static Toggle? SpinDirectionToggle { get; private set; }
+        public static Toggle? HypotheticalToggle { get; private set; }
         public static Button? TimeScaleMinusButton { get; private set; }
         public static Button? TimeScalePlusButton { get; private set; }
         public static Button? VisualPresetMinusButton { get; private set; }
@@ -31,7 +33,6 @@ namespace Assets.Scripts.Guis
         public static Button? CameraOrbitRightButton { get; private set; }
         public static Button? CameraZoomInButton { get; private set; }
         public static Button? CameraZoomOutButton { get; private set; }
-
         private static bool runtimeWidgetsAllocated = false;
         #endregion
 
@@ -54,6 +55,8 @@ namespace Assets.Scripts.Guis
         public static event Action<bool>? OrbitLinesToggled;
         public static event Action<bool>? SpinAxisToggled;
         public static event Action<bool>? WorldUpToggled;
+        public static event Action<bool>? SpinDirectionToggled;
+        public static event Action<bool>? HypotheticalToggleChanged;
         #endregion
 
         #region Public Helpers
@@ -126,6 +129,23 @@ namespace Assets.Scripts.Guis
         {
             WorldUpToggled?.Invoke(_enabled);
         }
+
+        /// <summary>
+        /// Relay spin-direction toggle changes to listeners.
+        /// </summary>
+        public static void NotifySpinDirectionToggled(bool _enabled)
+        {
+            SpinDirectionToggled?.Invoke(_enabled);
+        }
+
+        /// <summary>
+        /// Relay hypothetical object toggle changes to listeners.
+        /// </summary>
+        public static void NotifyHypotheticalToggleChanged(bool _enabled)
+        {
+            HypotheticalToggleChanged?.Invoke(_enabled);
+        }
+
         #endregion
 
         #region Allocate and Deallocate
@@ -134,10 +154,27 @@ namespace Assets.Scripts.Guis
         /// </summary>
         private static void AllocateInteractionWidgets()
         {
-            Canvas _canvas = GameObject.FindFirstObjectByType<Canvas>();
-            if (_canvas == null)
+            Canvas[] _canvases = Resources.FindObjectsOfTypeAll<Canvas>();
+            List<Canvas> _sceneCanvases = new List<Canvas>();
+            for (int _i = 0; _i < _canvases.Length; _i++)
             {
-                HelpLogs.Warn("Gui", "Can not locate canvas on this scene");
+                Canvas _canvas = _canvases[_i];
+                if (_canvas == null)
+                {
+                    continue;
+                }
+
+                if (!_canvas.gameObject.scene.IsValid())
+                {
+                    continue;
+                }
+
+                _sceneCanvases.Add(_canvas);
+            }
+
+            if (_sceneCanvases.Count == 0)
+            {
+                HelpLogs.Warn("Gui", "Can not locate any canvas in this scene");
                 return;
             }
 
@@ -145,55 +182,60 @@ namespace Assets.Scripts.Guis
             togglesByName.Clear();
             buttonsByName.Clear();
 
-            TextMeshProUGUI[] _texts = _canvas.GetComponentsInChildren<TextMeshProUGUI>(true);
-            for (int _i = 0; _i < _texts.Length; _i++)
+            for (int _c = 0; _c < _sceneCanvases.Count; _c++)
             {
-                TextMeshProUGUI _text = _texts[_i];
-                if (_text == null)
+                Canvas _canvas = _sceneCanvases[_c];
+
+                TextMeshProUGUI[] _texts = _canvas.GetComponentsInChildren<TextMeshProUGUI>(true);
+                for (int _i = 0; _i < _texts.Length; _i++)
                 {
-                    continue;
+                    TextMeshProUGUI _text = _texts[_i];
+                    if (_text == null)
+                    {
+                        continue;
+                    }
+
+                    if (textsByName.ContainsKey(_text.name))
+                    {
+                        continue;
+                    }
+
+                    textsByName.Add(_text.name, _text);
                 }
 
-                if (textsByName.ContainsKey(_text.name))
+                Toggle[] _toggles = _canvas.GetComponentsInChildren<Toggle>(true);
+                for (int _i = 0; _i < _toggles.Length; _i++)
                 {
-                    continue;
+                    Toggle _toggle = _toggles[_i];
+                    if (_toggle == null)
+                    {
+                        continue;
+                    }
+
+                    if (togglesByName.ContainsKey(_toggle.name))
+                    {
+                        continue;
+                    }
+
+                    togglesByName.Add(_toggle.name, _toggle);
                 }
 
-                textsByName.Add(_text.name, _text);
-            }
-
-            Toggle[] _toggles = _canvas.GetComponentsInChildren<Toggle>(true);
-            for (int _i = 0; _i < _toggles.Length; _i++)
-            {
-                Toggle _toggle = _toggles[_i];
-                if (_toggle == null)
+                Button[] _buttons = _canvas.GetComponentsInChildren<Button>(true);
+                for (int _i = 0; _i < _buttons.Length; _i++)
                 {
-                    continue;
+                    Button _button = _buttons[_i];
+                    if (_button == null)
+                    {
+                        continue;
+                    }
+
+                    if (buttonsByName.ContainsKey(_button.name))
+                    {
+                        continue;
+                    }
+
+                    buttonsByName.Add(_button.name, _button);
                 }
-
-                if (togglesByName.ContainsKey(_toggle.name))
-                {
-                    continue;
-                }
-
-                togglesByName.Add(_toggle.name, _toggle);
-            }
-
-            Button[] _buttons = _canvas.GetComponentsInChildren<Button>(true);
-            for (int _i = 0; _i < _buttons.Length; _i++)
-            {
-                Button _button = _buttons[_i];
-                if (_button == null)
-                {
-                    continue;
-                }
-
-                if (buttonsByName.ContainsKey(_button.name))
-                {
-                    continue;
-                }
-
-                buttonsByName.Add(_button.name, _button);
             }
 
             AppVersionText = GetTextByName("AppVersionText");
@@ -203,6 +245,8 @@ namespace Assets.Scripts.Guis
             OrbitLinesToggle = GetToggleByName("OrbitLinesToggle");
             SpinAxisToggle = GetToggleByName("SpinAxisToggle");
             WorldUpToggle = GetToggleByName("WorldUpToggle");
+            SpinDirectionToggle = GetToggleByName("SpinDirectionToggle");
+            HypotheticalToggle = TryGetToggleByName("HypotheticalToggleButton");
             TimeScaleMinusButton = TryGetButtonByName("TimeScaleMinusButton");
             TimeScalePlusButton = TryGetButtonByName("TimeScalePlusButton");
             VisualPresetMinusButton = TryGetButtonByName("VisualPresetMinusButton");
@@ -222,6 +266,7 @@ namespace Assets.Scripts.Guis
                 CameraOrbitLeftButton != null ||
                 CameraOrbitRightButton != null;
             bool _hasCameraZoomButtons = CameraZoomInButton != null || CameraZoomOutButton != null;
+            bool _hasPlanetXControl = HypotheticalToggle != null;
 
             if (!_hasTimeScaleButtons)
             {
@@ -243,7 +288,16 @@ namespace Assets.Scripts.Guis
                 HelpLogs.Warn("Gui", "Missing camera zoom buttons.");
             }
 
-            HelpLogs.Log("Gui", $"Allocated {textsByName.Count} texts on canvas {_canvas.name}");
+            if (!_hasPlanetXControl)
+            {
+                HelpLogs.Warn("Gui", "Missing HypotheticalToggleButton (optional).");
+            }
+
+            HelpLogs.Log(
+                "Gui",
+                $"Allocated {textsByName.Count} texts, {togglesByName.Count} toggles, " +
+                $"{buttonsByName.Count} buttons across {_sceneCanvases.Count} canvases."
+            );
             runtimeWidgetsAllocated = true;
         }
 
@@ -263,6 +317,8 @@ namespace Assets.Scripts.Guis
             OrbitLinesToggle = null;
             SpinAxisToggle = null;
             WorldUpToggle = null;
+            SpinDirectionToggle = null;
+            HypotheticalToggle = null;
             TimeScaleMinusButton = null;
             TimeScalePlusButton = null;
             VisualPresetMinusButton = null;
@@ -273,13 +329,15 @@ namespace Assets.Scripts.Guis
             CameraOrbitRightButton = null;
             CameraZoomInButton = null;
             CameraZoomOutButton = null;
-
             HelpLogs.Log("Gui", "Deallocated interaction widgets");
             runtimeWidgetsAllocated = false;
         }
         #endregion
 
         #region Lookup Helpers
+        /// <summary>
+        /// Resolve a TextMeshProUGUI by name with a warning when missing.
+        /// </summary>
         private static TextMeshProUGUI? GetTextByName(string _name)
         {
             if (textsByName.TryGetValue(_name, out TextMeshProUGUI _text))
@@ -291,6 +349,9 @@ namespace Assets.Scripts.Guis
             return null;
         }
 
+        /// <summary>
+        /// Resolve a Toggle by name with a warning when missing.
+        /// </summary>
         private static Toggle? GetToggleByName(string _name)
         {
             if (togglesByName.TryGetValue(_name, out Toggle _toggle))
@@ -302,11 +363,27 @@ namespace Assets.Scripts.Guis
             return null;
         }
 
+        /// <summary>
+        /// Try to resolve a Button by name without warnings.
+        /// </summary>
         private static Button? TryGetButtonByName(string _name)
         {
             if (buttonsByName.TryGetValue(_name, out Button _button))
             {
                 return _button;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Try to resolve a Toggle by name without warnings.
+        /// </summary>
+        private static Toggle? TryGetToggleByName(string _name)
+        {
+            if (togglesByName.TryGetValue(_name, out Toggle _toggle))
+            {
+                return _toggle;
             }
 
             return null;

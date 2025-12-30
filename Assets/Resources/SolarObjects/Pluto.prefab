@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4946770224664175666}
   - component: {fileID: 3034936306614209005}
   - component: {fileID: 4671955035770865030}
+  - component: {fileID: 6002366711147074905}
   m_Layer: 0
   m_Name: Pluto
   m_TagString: Untagged
@@ -90,3 +91,67 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &6002366711147074905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8671421592438044851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 423a49e28d77541f09eaa1c12f9cad3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Runtime.SolarObject
+  drawOrbitRuntime: 1
+  drawAxisRuntime: 1
+  drawWorldUpRuntime: 1
+  drawSpinDirectionRuntime: 1
+  orbitLineWidth: 0.06
+  axisLineWidth: 0.03
+  spinDirectionLineWidth: 0.02
+  orbitLineColor: {r: 0.2, g: 0.7, b: 1, a: 0.9}
+  moonOrbitLineColor: {r: 0.3, g: 0.9, b: 0.5, a: 0.9}
+  dwarfOrbitLineColor: {r: 0.9, g: 0.5, b: 0.9, a: 0.9}
+  hypotheticalOrbitLineColor: {r: 1, g: 0.2, b: 0.2, a: 0.95}
+  axisLineColor: {r: 1, g: 0.8, b: 0.2, a: 0.9}
+  worldUpLineColor: {r: 0.7, g: 0.7, b: 0.7, a: 0.8}
+  spinDirectionProgradeColor: {r: 0.2, g: 1, b: 0.4, a: 0.9}
+  spinDirectionRetrogradeColor: {r: 1, g: 0.3, b: 0.2, a: 0.9}
+  spinDirectionArcRadiusMultiplier: 1.1
+  spinDirectionArcAngleDeg: 240
+  spinDirectionArcSegments: 24
+  spinDirectionArrowHeadLengthMultiplier: 0.2
+  spinDirectionArrowHeadAngleDeg: 25
+  scaleAxisLinesByCameraDistance: 1
+  axisLineDistanceReference: 1.5
+  axisLineDistanceMinScale: 0.15
+  axisLineDistanceMaxScale: 6
+  axisLineDistanceExponent: 1.35
+  axisLineSizeReference: 0.15
+  axisLineSizeMinScale: 1.3
+  axisLineSizeMaxScale: 2.2
+  axisLineSizeWidthMaxScale: 1.6
+  axisLineSizeStarMaxScale: 1.4
+  axisLineLengthMultiplier: 0.5
+  axisLineThicknessMultiplier: 1.6
+  axisLineStarMaxLengthMultiplier: 0.6
+  axisLineSmallBodyDiameterThreshold: 0.25
+  axisLineSmallBodyLengthScale: 1.6
+  scaleOrbitLinesByCameraDistance: 1
+  orbitLineDistanceReference: 6
+  orbitLineDistanceMinScale: 0.12
+  orbitLineDistanceMaxScale: 20
+  orbitLineDistanceExponent: 1.6
+  orbitLineDistanceExponentNear: 0.85
+  orbitLineDistanceScaleBoost: 1.4
+  orbitLineDistanceNearExponentMultiplier: 0.7
+  orbitLineDistanceMaxScaleMultiplier: 1.4
+  hypotheticalOrbitLineFocusDistance: 10
+  hypotheticalOrbitLineFocusScaleMultiplier: 3
+  hypotheticalOrbitLineFarScale: 30
+  enableTidalLock: 1
+  tidalLockOnlyForMoons: 1
+  tidalLockPeriodTolerance: 0.02
+  tidalLockFacingOffsetDeg: 0
+  avatarSprite: {fileID: 21300000, guid: 3d669eaa6e42643849edd6be82a5fc67, type: 3}

@@ -69,7 +69,7 @@ Notes:
 - Each object can override `visual_defaults.distance_multiplier` for per-object adjustments.
 - A minimum orbit radius is enforced for moons so their orbit does not intersect the primary object:
   `moon_clearance_unity` + both object radii.
-Example (Earth, using defaults in `SolarSystemData.json`):
+Example (Earth, using defaults in `SolarSystemData_J2000_Keplerian_all_moons.json`):
 - `semi_major_axis_AU = 1.0` -> `149,597,870 km`
 - `distance_km_per_unity_unit = 1,000,000`
 - `visual_defaults.distance_multiplier = 0.468`
@@ -87,29 +87,29 @@ Notes:
 - The reference solar object's Unity diameter is taken from the actual spawned reference object (the Sun).
 - `global_radius_multiplier` comes from `global_visual_defaults` (and can be adjusted via runtime controls).
 - Changing the Sun’s prefab scale or its `spawn.scale_unity` will scale the entire system.
-Example (Earth, using defaults in `SolarSystemData.json`):
+Example (Earth, using defaults in `SolarSystemData_J2000_Keplerian_all_moons.json`):
 - Sun radius = `695,700 km`, Earth radius = `6,371 km`
 - Radius ratio = `0.00916`
 - `visual_defaults.radius_multiplier = 21.842`
 - If Sun diameter is `1.0` Unity unit, Earth diameter ≈ `0.20` Unity units
 
-### Orbit Models
-Each object’s `truth_orbit.model` is one of:
-- `circular` — simple circular orbit using semi-major axis as radius
-- `keplerian` — elliptical orbit using basic Keplerian elements (good for Pluto-style eccentricity and tilt)
+### Orbit Model
+Only `keplerian` is supported. The model uses basic Keplerian elements (good for Pluto-style eccentricity and tilt).
 
 > The Keplerian model here is intentionally simplified. It is not intended for ephemeris accuracy.
 
-#### Orbit Model Notes (Important)
-- `spawn.initial_angle_deg` currently only affects the **circular** model.
-- For `keplerian`, the starting position is controlled by `truth_orbit.mean_anomaly_deg`.
-- This means the same `initial_angle_deg` value does **not** align circular and keplerian objects. This is intentional for now to avoid breaking existing setups.
+#### Orbit Notes
+- `truth_orbit.mean_anomaly_deg` sets the baseline starting position.
+- `spawn.initial_angle_deg` adds an extra offset (degrees) to the mean anomaly at spawn.
+- Moon orbit frames can be overridden per object with `align_to_primary_tilt`:
+  - `true` to align to the primary’s axial tilt (equatorial plane)
+  - `false` to keep the dataset plane (ecliptic/J2000)
 
 ---
 
 ## Project Structure
 High-level:
-- `Assets/Resources/SolarSystemData.json` — master dataset (truth + visual defaults)
+- `Assets/Resources/SolarSystemData_J2000_Keplerian_all_moons.json` — keplerian dataset (truth + visual defaults)
 - `Assets/Resources/SolarObjects/` — prefabs loaded at runtime
   - Prefab names should match JSON `id` (recommended)
   - `Template.prefab` is used as a fallback when an id-matching prefab is missing
@@ -128,10 +128,10 @@ In Unity Package Manager:
 
 ### 2) Put the dataset in Resources
 Ensure this file exists:
-- `Assets/Resources/SolarSystemData.json`
+- `Assets/Resources/SolarSystemData_J2000_Keplerian_all_moons.json`
 
 Important:
-- In code/Inspector you reference it as `"SolarSystemData"` (no extension).
+- In code/Inspector you reference it as `"SolarSystemData_J2000_Keplerian_all_moons"` (no extension).
 
 ### 3) Put your prefabs in Resources
 Put your planet/moon prefabs here:
@@ -152,7 +152,7 @@ You do **not** need to manually add scripts to prefabs:
 1. Create an empty GameObject: `SolarSystemSimulator`
 2. Add component: `SolarSystemSimulator`
 3. In Inspector set:
-   - `Resources Json Path Without Extension` = `SolarSystemData`
+   - `Resources Json Path Without Extension` = `SolarSystemData_J2000_Keplerian_all_moons`
    - `Prefabs Resources Folder` = `SolarObjects`
 
 Press **Play**.
@@ -163,8 +163,11 @@ Press **Play**.
 `SolarSystemSimulator` can auto-bind buttons and labels for live tuning at runtime.
 Turn this on via `enableRuntimeControls` in the Inspector.
 
-The runtime GUI uses the **first Canvas** it finds and looks for named widgets.
+The runtime GUI scans **all scene canvases** and looks for named widgets.
 Add `Gui_RuntimeControlEvents` to the Canvas so button presses are applied via events.
+
+Optional:
+- Add `HypotheticalToggleButton` to show/hide hypothetical entries (objects with `is_hypothetical: true` in the JSON).
 
 Text labels (`TextMeshProUGUI`):
 - `TimeScaleValueText`
@@ -184,20 +187,25 @@ Buttons (`UnityEngine.UI.Button`):
 - `CameraZoomOutButton`
 
 Toggles (`UnityEngine.UI.Toggle`):
+- `HypotheticalToggleButton`
 - `OrbitLinesToggle`
 - `SpinAxisToggle`
 - `WorldUpToggle`
+- `SpinDirectionToggle`
 
 Control levels (names and values):
 
 | Control | Levels |
 | --- | --- |
 | Time Scale | Default = default, Speed_1000x = 1,000x, Speed_10000x = 10,000x, Speed_200000x = 200,000x |
-| Visual Preset | Realistic = distance/radius defaults + orbit segments 128, Simulation (default) = distance 0.02 + radius 0.25 + orbit segments 64 |
+| Visual Preset | Realistic = keplerian dataset + defaults + orbit segments 128, Simulation (default) = distance 0.02 + radius 0.25 + orbit segments 64 |
 
 Defaults come from `global_visual_defaults` for distance and radius (Realistic preset), while Time Scale is set in code.
-Orbit segments are 128 (Realistic) and 64 (Simulation), and distance km/unit + moon clearance remain at their default values across presets.
+Orbit segments are fixed per preset: 128 (Realistic) and 64 (Simulation). Distance km/unit + moon clearance remain at their default values across presets.
 When Simulation is active, runtime line widths are scaled down by 0.25x.
+Simulation also applies an extra scaling profile (type-based size scaling + inner/outer planet distance scaling) on top of `visual_defaults`, including a moon distance scale and optional orbit tilt alignment.
+When Realistic is active and runtime controls are enabled, per-object `visual_defaults` multipliers are ignored so sizes/distances use raw truth values. If runtime controls are disabled, `visual_defaults` remain active.
+Both presets use the same JSON dataset, only the visual scaling differs.
 
 ---
 
@@ -254,7 +262,9 @@ Global toggles for orbit paths, spin axis, and world-up lines are available in t
 - Realistic-size presets need a larger camera distance, the current focus distance range is tuned for the Simulation preset.
 - Maximum time scale (200,000x) can still be too fast for some devices.
 - Grid layout buttons can override their borders when sized by layout groups.
-- Moon tidal-locking is correct in motion, but the initial facing direction is not aligned to Earth by default.
+- Asteroid belt is not implemented yet.
+- Some moons need proper 3D models (e.g., Mars moons are still spheres).
+- Saturn rings need a complete rework.
 
 ---
 
@@ -271,33 +281,16 @@ Global toggles for orbit paths, spin axis, and world-up lines are available in t
 
 ## Extending the System
 To add a new object:
-1. Add a new entry under `solar_objects` in `SolarSystemData.json`
+1. Add a new entry under `solar_objects` in `SolarSystemData_J2000_Keplerian_all_moons.json`
 2. Set:
    - `id` (unique)
    - `primary_id` (e.g. `"sun"` or a planet id for moons)
    - `truth_physical.mean_radius_km`
    - `truth_spin` (rotation period + optional axial tilt)
-   - `truth_orbit` (semi-major axis + orbital period, set `model`)
+   - `truth_orbit` (keplerian elements)
 3. Add a prefab named the same as `id` in `Assets/Resources/SolarObjects/` (optional, otherwise `Template` is used)
 
-### JSON Examples
-Circular orbit (simple):
-```json
-{
-  "id": "example_planet",
-  "type": "planet",
-  "display_name": "Example",
-  "order_from_sun": 5,
-  "primary_id": "sun",
-  "truth_physical": { "mean_radius_km": 3000.0 },
-  "truth_spin": { "sidereal_rotation_period_hours": 20.0, "axial_tilt_deg": 10.0 },
-  "truth_orbit": { "model": "circular", "semi_major_axis_AU": 2.5, "orbital_period_days": 1000.0 },
-  "visual_defaults": { "radius_multiplier": 25.0, "distance_multiplier": 0.4 },
-  "spawn": { "initial_angle_deg": 45.0 }
-}
-```
-
-Keplerian orbit (elliptical + tilted):
+### JSON Example (Keplerian)
 ```json
 {
   "id": "example_dwarf",
@@ -316,7 +309,8 @@ Keplerian orbit (elliptical + tilted):
     "argument_periapsis_deg": 113.0,
     "mean_anomaly_deg": 0.0
   },
-  "visual_defaults": { "radius_multiplier": 40.0, "distance_multiplier": 0.06 }
+  "visual_defaults": { "radius_multiplier": 40.0, "distance_multiplier": 0.06 },
+  "spawn": { "initial_angle_deg": 25.0 }
 }
 ```
 
@@ -357,6 +351,7 @@ Code PRs may be closed without review. If you want to propose a code change, ple
 - Add gravity and spacetime visuals
 - Add an asteroid belt
 - Enhance lighting
+- Add Sun fusion VFX and flare effects (especially visible from far away)
 - Other improvements and refinements
 
 ---

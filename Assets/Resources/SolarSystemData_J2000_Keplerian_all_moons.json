@@ -10,7 +10,7 @@
     "global_distance_multiplier": 1.0,
     "global_radius_multiplier": 1.0,
     "orbit_path_segments_default": 256,
-    "moon_clearance_unity": 0.02
+    "moon_clearance_unity": 0.01
   },
   "solar_objects": [
     {
@@ -25,11 +25,12 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 25.38,
+        "spin_direction": 1,
         "axial_tilt_deg": 7.25
       },
       "visual_defaults": {
         "radius_multiplier": 1.0,
-        "distance_multiplier": 1.0
+        "distance_multiplier": 0.02
       },
       "spawn": {
         "position_unity": [
@@ -57,6 +58,7 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 58.646,
+        "spin_direction": 1,
         "axial_tilt_deg": 0.034
       },
       "truth_orbit": {
@@ -89,6 +91,7 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 243.025,
+        "spin_direction": -1,
         "axial_tilt_deg": 177.36
       },
       "truth_orbit": {
@@ -121,6 +124,7 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_hours": 23.934,
+        "spin_direction": 1,
         "axial_tilt_deg": 23.44
       },
       "truth_orbit": {
@@ -145,14 +149,15 @@
       "id": "moon",
       "type": "moon",
       "display_name": "Moon",
-      "order_from_sun": null,
       "primary_id": "earth",
+      "align_to_primary_tilt": false,
       "is_reference": false,
       "truth_physical": {
         "mean_radius_km": 1737.4
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 27.3217,
+        "spin_direction": 1,
         "axial_tilt_deg": 6.68
       },
       "truth_orbit": {
@@ -167,7 +172,7 @@
       },
       "visual_defaults": {
         "radius_multiplier": 32.04,
-        "distance_multiplier": 15.61
+        "distance_multiplier": 9.37
       },
       "spawn": {
         "initial_angle_deg": 0
@@ -185,6 +190,7 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_hours": 24.623,
+        "spin_direction": 1,
         "axial_tilt_deg": 25.19
       },
       "truth_orbit": {
@@ -209,14 +215,15 @@
       "id": "phobos",
       "type": "moon",
       "display_name": "Phobos",
-      "order_from_sun": null,
       "primary_id": "mars",
+      "align_to_primary_tilt": true,
       "is_reference": false,
       "truth_physical": {
         "mean_radius_km": 11.2667
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 0.31891023,
+        "spin_direction": 1,
         "axial_tilt_deg": 0.0
       },
       "truth_orbit": {
@@ -231,7 +238,7 @@
       },
       "visual_defaults": {
         "radius_multiplier": 1852.0,
-        "distance_multiplier": 234.7
+        "distance_multiplier": 140.82
       },
       "spawn": {
         "initial_angle_deg": 0
@@ -241,14 +248,15 @@
       "id": "deimos",
       "type": "moon",
       "display_name": "Deimos",
-      "order_from_sun": null,
       "primary_id": "mars",
+      "align_to_primary_tilt": true,
       "is_reference": false,
       "truth_physical": {
         "mean_radius_km": 6.2
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 1.26244,
+        "spin_direction": 1,
         "axial_tilt_deg": 0.0
       },
       "truth_orbit": {
@@ -263,7 +271,7 @@
       },
       "visual_defaults": {
         "radius_multiplier": 2805.0,
-        "distance_multiplier": 127.9
+        "distance_multiplier": 76.74
       },
       "spawn": {
         "initial_angle_deg": 0
@@ -281,6 +289,7 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_hours": 9.925,
+        "spin_direction": 1,
         "axial_tilt_deg": 3.13
       },
       "truth_orbit": {
@@ -306,12 +315,14 @@
       "type": "moon",
       "display_name": "Io",
       "primary_id": "jupiter",
+      "align_to_primary_tilt": true,
       "is_reference": false,
       "truth_physical": {
         "mean_radius_km": 1821.6
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 1.769,
+        "spin_direction": 1,
         "axial_tilt_deg": 0.0
       },
       "truth_orbit": {
@@ -326,7 +337,7 @@
       },
       "visual_defaults": {
         "radius_multiplier": 24.16,
-        "distance_multiplier": 9.49
+        "distance_multiplier": 5.69
       },
       "spawn": {
         "initial_angle_deg": 0
@@ -337,12 +348,14 @@
       "type": "moon",
       "display_name": "Europa",
       "primary_id": "jupiter",
+      "align_to_primary_tilt": true,
       "is_reference": false,
       "truth_physical": {
         "mean_radius_km": 1560.8
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 3.551,
+        "spin_direction": 1,
         "axial_tilt_deg": 0.0
       },
       "truth_orbit": {
@@ -357,7 +370,7 @@
       },
       "visual_defaults": {
         "radius_multiplier": 24.55,
-        "distance_multiplier": 7.45
+        "distance_multiplier": 4.47
       },
       "spawn": {
         "initial_angle_deg": 0
@@ -368,12 +381,14 @@
       "type": "moon",
       "display_name": "Ganymede",
       "primary_id": "jupiter",
+      "align_to_primary_tilt": true,
       "is_reference": false,
       "truth_physical": {
         "mean_radius_km": 2634.1
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 7.155,
+        "spin_direction": 1,
         "axial_tilt_deg": 0.0
       },
       "truth_orbit": {
@@ -388,7 +403,7 @@
       },
       "visual_defaults": {
         "radius_multiplier": 17.18,
-        "distance_multiplier": 6.07
+        "distance_multiplier": 3.64
       },
       "spawn": {
         "initial_angle_deg": 0
@@ -399,12 +414,14 @@
       "type": "moon",
       "display_name": "Callisto",
       "primary_id": "jupiter",
+      "align_to_primary_tilt": true,
       "is_reference": false,
       "truth_physical": {
         "mean_radius_km": 2410.3
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 16.689,
+        "spin_direction": 1,
         "axial_tilt_deg": 0.0
       },
       "truth_orbit": {
@@ -419,7 +436,7 @@
       },
       "visual_defaults": {
         "radius_multiplier": 17.31,
-        "distance_multiplier": 4.25
+        "distance_multiplier": 2.55
       },
       "spawn": {
         "initial_angle_deg": 0
@@ -437,6 +454,7 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_hours": 10.656,
+        "spin_direction": 1,
         "axial_tilt_deg": 26.73
       },
       "truth_orbit": {
@@ -462,12 +480,14 @@
       "type": "moon",
       "display_name": "Titan",
       "primary_id": "saturn",
+      "align_to_primary_tilt": true,
       "is_reference": false,
       "truth_physical": {
         "mean_radius_km": 2574.7
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 15.945,
+        "spin_direction": 1,
         "axial_tilt_deg": 0.0
       },
       "truth_orbit": {
@@ -482,7 +502,7 @@
       },
       "visual_defaults": {
         "radius_multiplier": 18.89,
-        "distance_multiplier": 5.73
+        "distance_multiplier": 3.44
       },
       "spawn": {
         "initial_angle_deg": 0
@@ -493,12 +513,14 @@
       "type": "moon",
       "display_name": "Enceladus",
       "primary_id": "saturn",
+      "align_to_primary_tilt": true,
       "is_reference": false,
       "truth_physical": {
         "mean_radius_km": 252.1
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 1.370218,
+        "spin_direction": 1,
         "axial_tilt_deg": 0.0
       },
       "truth_orbit": {
@@ -513,7 +535,7 @@
       },
       "visual_defaults": {
         "radius_multiplier": 110.4,
-        "distance_multiplier": 18.91
+        "distance_multiplier": 11.35
       },
       "spawn": {
         "initial_angle_deg": 0
@@ -531,6 +553,7 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_hours": 17.24,
+        "spin_direction": -1,
         "axial_tilt_deg": 97.77
       },
       "truth_orbit": {
@@ -563,6 +586,7 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_hours": 16.11,
+        "spin_direction": 1,
         "axial_tilt_deg": 28.32
       },
       "truth_orbit": {
@@ -595,6 +619,7 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_days": 6.387,
+        "spin_direction": -1,
         "axial_tilt_deg": 119.59
       },
       "truth_orbit": {
@@ -609,7 +634,7 @@
       },
       "visual_defaults": {
         "radius_multiplier": 46.82,
-        "distance_multiplier": 0.064
+        "distance_multiplier": 0.068
       },
       "spawn": {
         "initial_angle_deg": 0
@@ -619,6 +644,7 @@
       "id": "ceres",
       "type": "dwarf_planet",
       "display_name": "Ceres",
+      "order_from_sun": 5,
       "primary_id": "sun",
       "is_reference": false,
       "truth_physical": {
@@ -626,6 +652,7 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_hours": 9.074,
+        "spin_direction": 1,
         "axial_tilt_deg": 4.0
       },
       "truth_orbit": {
@@ -640,7 +667,7 @@
       },
       "visual_defaults": {
         "radius_multiplier": 74.04,
-        "distance_multiplier": 0.289
+        "distance_multiplier": 0.307
       },
       "spawn": {
         "initial_angle_deg": 0
@@ -650,6 +677,7 @@
       "id": "eris",
       "type": "dwarf_planet",
       "display_name": "Eris",
+      "order_from_sun": 10,
       "primary_id": "sun",
       "is_reference": false,
       "truth_physical": {
@@ -657,6 +685,7 @@
       },
       "truth_spin": {
         "sidereal_rotation_period_hours": 25.9,
+        "spin_direction": 1,
         "axial_tilt_deg": 78.0
       },
       "truth_orbit": {
@@ -671,11 +700,60 @@
       },
       "visual_defaults": {
         "radius_multiplier": 35.93,
-        "distance_multiplier": 0.051
+        "distance_multiplier": 0.054
       },
       "spawn": {
         "initial_angle_deg": 0
       }
+    },
+    {
+      "id": "planet_x",
+      "type": "planet",
+      "display_name": "Planet X",
+      "order_from_sun": 11,
+      "primary_id": "sun",
+      "is_reference": false,
+      "is_hypothetical": true,
+      "_comment": "Hypothetical Planet X / Planet Nine-style object. The Keplerian elements below are illustrative and not an official/confirmed body. Angular elements (Omega, omega, M) are not observationally constrained; set to 0 for visualization.",
+      "hypothesis": {
+        "candidate_natures": [
+          "planet",
+          "primordial_black_hole"
+        ]
+      },
+      "truth_physical": {
+        "mean_radius_km": 20000.0
+      },
+      "truth_spin": {
+        "sidereal_rotation_period_hours": 24.0,
+        "axial_tilt_deg": 20.0
+      },
+      "truth_orbit": {
+        "model": "keplerian",
+        "semi_major_axis_AU": 500.0,
+        "orbital_period_days": 4083619.143909,
+        "eccentricity": 0.4,
+        "inclination_deg": 20.0,
+        "longitude_ascending_node_deg": 0.0,
+        "argument_periapsis_deg": 0.0,
+        "mean_anomaly_deg": 0.0
+      },
+      "visual_defaults": {
+        "radius_multiplier": 1.0,
+        "distance_multiplier": 1.0
+      },
+      "spawn": {
+        "initial_angle_deg": 0
+      },
+      "credits": [
+        "https://ssd.jpl.nasa.gov/planets/approx_pos.html",
+        "https://ssd.jpl.nasa.gov/planets/phys_par.html",
+        "https://ssd.jpl.nasa.gov/sats/elem/",
+        "https://ssd.jpl.nasa.gov/astro_par.html",
+        "https://arxiv.org/abs/1902.10103",
+        "https://www.caltech.edu/about/news/caltech-researchers-find-evidence-real-ninth-planet-49523",
+        "https://link.aps.org/doi/10.1103/PhysRevLett.125.051103"
+      ]
     }
   ]
 }

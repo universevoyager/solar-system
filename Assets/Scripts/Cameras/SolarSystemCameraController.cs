@@ -16,16 +16,20 @@ namespace Assets.Scripts.Cameras
     {
         #region Serialized Fields
         [Header("Virtual Cameras")]
-        [SerializeField] private CinemachineCamera? focusVirtualCamera;
-        [SerializeField] private CinemachineCamera? overviewVirtualCamera;
+        // Auto-located by name if left empty.
+        private CinemachineCamera? focusVirtualCamera;
+        // Auto-located by name if left empty.
+        private CinemachineCamera? overviewVirtualCamera;
 
         [Header("Virtual Camera Names")]
         [SerializeField] private string focusVirtualCameraName = "Follow-SolarObject-VCinemachine";
         [SerializeField] private string overviewVirtualCameraName = "Overview-SolarSystem-VCinemachine";
 
         [Header("Proxy Targets")]
-        [SerializeField] private Transform? focusProxy;
-        [SerializeField] private Transform? overviewProxy;
+        // Optional proxy objects used for smooth camera motion.
+        private Transform? focusProxy;
+        // Optional proxy objects used for smooth camera motion.
+        private Transform? overviewProxy;
 
         [Header("Proxy Names")]
         [SerializeField] private string focusProxyName = "Focus_Proxy";
@@ -36,6 +40,7 @@ namespace Assets.Scripts.Cameras
         private Transform? focusTarget;
 
         [Header("Proxy Smoothing")]
+        // Smoothly move proxies toward their targets.
         [SerializeField] private bool smoothProxyMovement = true;
         [SerializeField] private float proxySmoothTime = 0.2f;
         [SerializeField] private float proxyMaxSpeed = 200f;
@@ -43,6 +48,7 @@ namespace Assets.Scripts.Cameras
         [SerializeField] private float proxySpeedDistanceRange = 30f;
 
         [Header("Zoom Smoothing")]
+        // Smoothly interpolate camera distance changes.
         [SerializeField] private bool smoothZoomDistance = true;
         [SerializeField] private float zoomSmoothTime = 0.16f;
         [SerializeField] private float zoomMaxSpeed = 200f;
@@ -54,37 +60,51 @@ namespace Assets.Scripts.Cameras
         [SerializeField] private int overviewPriority = 10;
 
         [Header("Focus Distance")]
+        // Base distances used for focus camera framing.
         [SerializeField] private float focusDistanceSmall = 0.35f;
         [SerializeField] private float focusDistanceMedium = 0.6f;
         [SerializeField] private float focusDistanceSun = 1.8f;
         [SerializeField] private float focusMediumSizeThreshold = 0.3f;
 
         [Header("Zoom Controls")]
+        // Focus zoom limits expressed as multipliers of base distance.
         [SerializeField] private float focusZoomMinMultiplier = 0.15f;
         [SerializeField] private float focusZoomMaxMultiplier = 3f;
+        // Absolute minimum distance for the Sun (before allowance).
         [SerializeField] private float focusZoomMinDistanceSun = 1.5f;
+        // Extra min-distance padding for large bodies in Simulation.
         [SerializeField] private float simulationLargeBodyMinDistanceOffset = 0.15f;
+        // Allow extra zoom-in on large bodies beyond base minimum.
         [SerializeField] private float focusLargeBodyZoomInAllowance = 0.0f;
+        // Allow extra zoom-in on the Sun beyond the base minimum.
         [SerializeField] private float focusSunZoomInAllowance = 0.25f;
+        // Hard clamp to prevent camera from going too close.
         [SerializeField] private float focusZoomAbsoluteMinDistance = 0.05f;
         [SerializeField] private float overviewZoomMinDistance = 2f;
-        [SerializeField] private float overviewZoomMaxDistance = 10f;
+        [SerializeField] private float overviewZoomMaxDistance = 80f;
         [SerializeField] private float overviewDefaultDistance = 5f;
+        [SerializeField] private float overviewZoomSpeedMultiplier = 5f;
+        [SerializeField] private float focusZoomStep = 0.1f;
         [SerializeField] private float zoomStep = 0.2f;
 
         [Header("Realistic Preset Overrides")]
+        // Overrides used when Realistic preset is active.
         [SerializeField] private float realisticFocusZoomMinMultiplier = 0.6f;
         [SerializeField] private float realisticOverviewZoomMinDistance = 50f;
         [SerializeField] private float realisticOverviewZoomMaxDistance = 500f;
         [SerializeField] private float realisticOverviewZoomSpeedMultiplier = 10f;
 
         [Header("Orbit Controls")]
+        // Orbit step size in world units (scaled to degrees by radius).
         [SerializeField] private float orbitStep = 0.1f;
         [SerializeField] private float focusOrbitMaxOffset = 1f;
         [SerializeField] private float overviewOrbitMaxOffset = 5f;
         [SerializeField] private float orbitMaxPitchDegrees = 80f;
         [SerializeField] private float orbitRadiusMaxFactor = 0.5f;
         [SerializeField] private float orbitStepMaxDegrees = 10f;
+        // Faster orbit steps when overview is far away.
+        [SerializeField] private float overviewOrbitStepDistanceMultiplier = 2.5f;
+        [SerializeField] private float overviewOrbitStepBoostDistance = 25f;
 
         #endregion
 
@@ -178,7 +198,7 @@ namespace Assets.Scripts.Cameras
 
             if (focusVirtualCamera == null && overviewVirtualCamera == null)
             {
-                HelpLogs.Warn("Camera", "No Cinemachine virtual cameras found. Camera controls are disabled.");
+                HelpLogs.Warn("Camera", "No Cinemachine virtual cameras found or one is not active.");
                 return;
             }
 
@@ -240,7 +260,7 @@ namespace Assets.Scripts.Cameras
 
             if (_isNewTarget)
             {
-                InvalidateCameraState(focusVirtualCamera);
+                ResetCameraState(focusVirtualCamera);
             }
 
             SetCameraPriority(focusVirtualCamera, overviewVirtualCamera);
@@ -285,7 +305,7 @@ namespace Assets.Scripts.Cameras
             overviewProxyVelocity = Vector3.zero;
             overviewDistanceVelocity = 0f;
 
-            InvalidateCameraState(overviewVirtualCamera);
+            ResetCameraState(overviewVirtualCamera);
             SetCameraPriority(overviewVirtualCamera, focusVirtualCamera);
         }
 
@@ -306,7 +326,7 @@ namespace Assets.Scripts.Cameras
         #endregion
 
         #region Unity Lifecycle
-        private void OnEnable()
+        private void Awake()
         {
             Gui.CameraOrbitStepRequested += HandleCameraOrbitStepRequested;
             Gui.CameraZoomStepRequested += HandleCameraZoomStepRequested;
@@ -315,17 +335,6 @@ namespace Assets.Scripts.Cameras
             if (simulator != null)
             {
                 simulator.VisualPresetChanged += HandleVisualPresetChanged;
-            }
-        }
-
-        private void OnDisable()
-        {
-            Gui.CameraOrbitStepRequested -= HandleCameraOrbitStepRequested;
-            Gui.CameraZoomStepRequested -= HandleCameraZoomStepRequested;
-
-            if (simulator != null)
-            {
-                simulator.VisualPresetChanged -= HandleVisualPresetChanged;
             }
         }
 
@@ -345,9 +354,23 @@ namespace Assets.Scripts.Cameras
             UpdateCameraDistances();
             UpdateOrbitOffsetsForDistances();
         }
+
+        private void OnDestroy()
+        {
+            Gui.CameraOrbitStepRequested -= HandleCameraOrbitStepRequested;
+            Gui.CameraZoomStepRequested -= HandleCameraZoomStepRequested;
+
+            if (simulator != null)
+            {
+                simulator.VisualPresetChanged -= HandleVisualPresetChanged;
+            }
+        }
         #endregion
 
         #region Helpers
+        /// <summary>
+        /// Apply active/inactive priorities to Cinemachine cameras.
+        /// </summary>
         private void SetCameraPriority(CinemachineCamera _active, CinemachineCamera? _inactive)
         {
             int _high = Math.Max(focusPriority, overviewPriority);
@@ -360,11 +383,17 @@ namespace Assets.Scripts.Cameras
             }
         }
 
-        private void InvalidateCameraState(CinemachineCamera _camera)
+        /// <summary>
+        /// Reset Cinemachine state to force an immediate recompute.
+        /// </summary>
+        private void ResetCameraState(CinemachineCamera _camera)
         {
             _camera.PreviousStateIsValid = false;
         }
 
+        /// <summary>
+        /// Find a Cinemachine camera by name in the scene.
+        /// </summary>
         private CinemachineCamera? FindVirtualCameraByName(string _name)
         {
             if (string.IsNullOrWhiteSpace(_name))
@@ -397,6 +426,9 @@ namespace Assets.Scripts.Cameras
             return null;
         }
 
+        /// <summary>
+        /// Ensure proxy transforms are resolved by name.
+        /// </summary>
         private void EnsureProxies()
         {
             if (focusProxy == null)
@@ -418,6 +450,9 @@ namespace Assets.Scripts.Cameras
             }
         }
 
+        /// <summary>
+        /// Assign focus camera follow/look-at targets.
+        /// </summary>
         private void ApplyFocusCameraTargets()
         {
             if (focusVirtualCamera == null)
@@ -436,6 +471,9 @@ namespace Assets.Scripts.Cameras
             focusVirtualCamera.LookAt = _lookAtTarget;
         }
 
+        /// <summary>
+        /// Assign overview camera follow/look-at targets.
+        /// </summary>
         private void ApplyOverviewCameraTargets()
         {
             if (overviewVirtualCamera == null)
@@ -454,6 +492,9 @@ namespace Assets.Scripts.Cameras
             overviewVirtualCamera.LookAt = _lookAtTarget;
         }
 
+        /// <summary>
+        /// Move proxy transforms toward targets with optional smoothing.
+        /// </summary>
         private void UpdateProxyTransform(
             Transform? _proxy,
             Transform? _target,
@@ -494,6 +535,9 @@ namespace Assets.Scripts.Cameras
             _proxy.rotation = Quaternion.identity;
         }
 
+        /// <summary>
+        /// Locate a proxy object by name in the scene.
+        /// </summary>
         private Transform? FindProxyByName(string _name)
         {
             if (string.IsNullOrWhiteSpace(_name))
@@ -510,6 +554,9 @@ namespace Assets.Scripts.Cameras
             return null;
         }
 
+        /// <summary>
+        /// Apply focus distance clamps and update desired distance.
+        /// </summary>
         private void ApplyFocusDistance(SolarObject _solarObject)
         {
             if (focusVirtualCamera == null)
@@ -548,6 +595,9 @@ namespace Assets.Scripts.Cameras
             }
         }
 
+        /// <summary>
+        /// Apply overview distance clamps and update desired distance.
+        /// </summary>
         private void ApplyOverviewDistance()
         {
             if (overviewVirtualCamera == null)
@@ -594,6 +644,9 @@ namespace Assets.Scripts.Cameras
             }
         }
 
+        /// <summary>
+        /// Select the base focus distance for the target size.
+        /// </summary>
         private float GetFocusDistance(SolarObject _solarObject)
         {
             if (string.Equals(_solarObject.Id, "sun", StringComparison.OrdinalIgnoreCase))
@@ -610,6 +663,9 @@ namespace Assets.Scripts.Cameras
             return focusDistanceSmall;
         }
 
+        /// <summary>
+        /// Compute the minimum focus distance for a target.
+        /// </summary>
         private float GetFocusMinDistance(SolarObject _solarObject, float _baseDistance, float _minMultiplier)
         {
             if (string.Equals(_solarObject.Id, "sun", StringComparison.OrdinalIgnoreCase))
@@ -632,12 +688,18 @@ namespace Assets.Scripts.Cameras
             return Mathf.Max(focusZoomAbsoluteMinDistance, _minDistance);
         }
 
+        /// <summary>
+        /// Determine if an object should be treated as a large body.
+        /// </summary>
         private bool IsLargeBody(SolarObject _solarObject)
         {
             float _baseDiameter = _solarObject.BaseDiameterUnity;
             return _baseDiameter >= focusMediumSizeThreshold;
         }
 
+        /// <summary>
+        /// Resolve the focus zoom minimum multiplier for the active preset.
+        /// </summary>
         private float GetFocusMinMultiplier()
         {
             if (isRealisticPreset)
@@ -648,6 +710,9 @@ namespace Assets.Scripts.Cameras
             return focusZoomMinMultiplier;
         }
 
+        /// <summary>
+        /// True when the focus camera has priority over overview.
+        /// </summary>
         private bool IsFocusActive()
         {
             if (focusVirtualCamera == null)
@@ -663,6 +728,9 @@ namespace Assets.Scripts.Cameras
             return focusVirtualCamera.Priority >= overviewVirtualCamera.Priority;
         }
 
+        /// <summary>
+        /// Apply a discrete orbit step around the active target.
+        /// </summary>
         private void HandleCameraOrbitStepRequested(Vector2 _direction)
         {
             if (_direction == Vector2.zero)
@@ -717,6 +785,7 @@ namespace Assets.Scripts.Cameras
                     ref overviewOrbitInitialized
                 );
                 float _step = GetOrbitStepDegrees(_radius);
+                _step *= GetOverviewOrbitStepMultiplier(_cameraDistance);
                 overviewOrbitYaw = WrapAngle(overviewOrbitYaw + _direction.x * _step);
                 overviewOrbitPitch = Mathf.Clamp(
                     overviewOrbitPitch + _direction.y * _step,
@@ -727,6 +796,9 @@ namespace Assets.Scripts.Cameras
             }
         }
 
+        /// <summary>
+        /// Apply a discrete zoom step for focus or overview.
+        /// </summary>
         private void HandleCameraZoomStepRequested(int _delta)
         {
             if (_delta == 0)
@@ -743,7 +815,7 @@ namespace Assets.Scripts.Cameras
                     return;
                 }
 
-                focusZoomOffset += _delta * zoomStep;
+                focusZoomOffset += _delta * focusZoomStep;
                 ApplyFocusDistance(focusSolarObject);
                 RefreshFocusOrbitOffset();
             }
@@ -755,6 +827,9 @@ namespace Assets.Scripts.Cameras
             }
         }
 
+        /// <summary>
+        /// Convert orbit step size to degrees based on radius.
+        /// </summary>
         private float GetOrbitStepDegrees(float _radius)
         {
             if (_radius <= 0f)
@@ -768,6 +843,26 @@ namespace Assets.Scripts.Cameras
             return Mathf.Min(_degrees, _max);
         }
 
+        /// <summary>
+        /// Increase orbit step size as overview distance grows.
+        /// </summary>
+        private float GetOverviewOrbitStepMultiplier(float _cameraDistance)
+        {
+            float _distance = Mathf.Max(0f, _cameraDistance);
+            float _start = Mathf.Max(1f, overviewOrbitStepBoostDistance);
+            if (_distance <= _start)
+            {
+                return 1.0f;
+            }
+
+            float _t = Mathf.Clamp01((_distance - _start) / _start);
+            float _target = Mathf.Max(1.0f, overviewOrbitStepDistanceMultiplier);
+            return Mathf.Lerp(1.0f, _target, _t);
+        }
+
+        /// <summary>
+        /// Initialize orbit offsets from the current camera view if needed.
+        /// </summary>
         private void EnsureOrbitInitialized(
             Transform _target,
             float _radius,
@@ -791,6 +886,9 @@ namespace Assets.Scripts.Cameras
             }
         }
 
+        /// <summary>
+        /// Sync orbit yaw/pitch to the current camera direction.
+        /// </summary>
         private void SyncOrbitToCameraView(
             Transform _target,
             float _radius,
@@ -803,6 +901,9 @@ namespace Assets.Scripts.Cameras
             TrySyncOrbitToCameraView(_target, _radius, ref _yaw, ref _pitch, ref _offset, ref _initialized);
         }
 
+        /// <summary>
+        /// Try to sync orbit yaw/pitch to the current camera direction.
+        /// </summary>
         private bool TrySyncOrbitToCameraView(
             Transform _target,
             float _radius,
@@ -822,6 +923,9 @@ namespace Assets.Scripts.Cameras
             return true;
         }
 
+        /// <summary>
+        /// Wrap degrees into a stable range.
+        /// </summary>
         private float WrapAngle(float _angle)
         {
             if (_angle >= 360f || _angle <= -360f)
@@ -832,6 +936,9 @@ namespace Assets.Scripts.Cameras
             return _angle;
         }
 
+        /// <summary>
+        /// Resolve the camera direction vector from the target.
+        /// </summary>
         private bool TryGetCameraDirection(Transform _target, out Vector3 _direction)
         {
             _direction = Vector3.zero;
@@ -851,6 +958,9 @@ namespace Assets.Scripts.Cameras
             return true;
         }
 
+        /// <summary>
+        /// Smoothly update focus and overview camera distances.
+        /// </summary>
         private void UpdateCameraDistances()
         {
             if (focusPositionComposer != null)
@@ -875,6 +985,9 @@ namespace Assets.Scripts.Cameras
             }
         }
 
+        /// <summary>
+        /// Smooth or snap a Cinemachine camera distance to the target.
+        /// </summary>
         private void UpdateCameraDistance(
             CinemachinePositionComposer _composer,
             float _target,
@@ -910,6 +1023,9 @@ namespace Assets.Scripts.Cameras
             _composer.CameraDistance = _distance;
         }
 
+        /// <summary>
+        /// Map distance-to-target into a smooth speed range.
+        /// </summary>
         private float GetAdaptiveSpeed(float _distance, float _minSpeed, float _maxSpeed, float _range)
         {
             float _safeRange = Mathf.Max(0.001f, _range);
@@ -920,6 +1036,9 @@ namespace Assets.Scripts.Cameras
             return Mathf.Lerp(_min, _max, _t);
         }
 
+        /// <summary>
+        /// Resolve the overview zoom speed multiplier for the active preset.
+        /// </summary>
         private float GetOverviewZoomSpeedMultiplier()
         {
             if (isRealisticPreset)
@@ -927,9 +1046,12 @@ namespace Assets.Scripts.Cameras
                 return Mathf.Max(1.0f, realisticOverviewZoomSpeedMultiplier);
             }
 
-            return 1.0f;
+            return Mathf.Max(1.0f, overviewZoomSpeedMultiplier);
         }
 
+        /// <summary>
+        /// Recompute orbit offsets when camera distance changes.
+        /// </summary>
         private void UpdateOrbitOffsetsForDistances()
         {
             if (focusOrbitInitialized && focusTarget != null)
@@ -945,6 +1067,9 @@ namespace Assets.Scripts.Cameras
             }
         }
 
+        /// <summary>
+        /// Convert a direction vector into yaw/pitch orbit values.
+        /// </summary>
         private void SetOrbitFromDirection(
             Vector3 _direction,
             float _radius,
@@ -962,6 +1087,9 @@ namespace Assets.Scripts.Cameras
             _offset = GetOrbitOffset(_radius, _yaw, _pitch);
         }
 
+        /// <summary>
+        /// Sync focus zoom offset from the current camera distance.
+        /// </summary>
         private void SyncFocusZoomFromCurrentView(SolarObject _solarObject)
         {
             float _currentDistance = GetFocusCameraDistance();
@@ -969,18 +1097,27 @@ namespace Assets.Scripts.Cameras
             focusZoomOffset = _currentDistance - _baseDistance;
         }
 
+        /// <summary>
+        /// Compute the focus orbit radius from camera distance.
+        /// </summary>
         private float GetFocusOrbitRadius()
         {
             float _cameraDistance = GetFocusCameraDistance();
             return GetOrbitRadiusFromDistance(_cameraDistance, focusOrbitMaxOffset);
         }
 
+        /// <summary>
+        /// Compute the overview orbit radius from camera distance.
+        /// </summary>
         private float GetOverviewOrbitRadius()
         {
             float _cameraDistance = GetOverviewCameraDistance();
             return GetOrbitRadiusFromDistance(_cameraDistance, overviewOrbitMaxOffset);
         }
 
+        /// <summary>
+        /// Get the current focus camera distance.
+        /// </summary>
         private float GetFocusCameraDistance()
         {
             if (focusPositionComposer != null)
@@ -996,6 +1133,9 @@ namespace Assets.Scripts.Cameras
             return focusDistanceSmall;
         }
 
+        /// <summary>
+        /// Get the current overview camera distance.
+        /// </summary>
         private float GetOverviewCameraDistance()
         {
             if (overviewPositionComposer != null)
@@ -1006,6 +1146,9 @@ namespace Assets.Scripts.Cameras
             return overviewDefaultDistance;
         }
 
+        /// <summary>
+        /// Convert camera distance to an orbit radius with a max cap.
+        /// </summary>
         private float GetOrbitRadiusFromDistance(float _cameraDistance, float _maxOffset)
         {
             float _factor = Mathf.Clamp01(orbitRadiusMaxFactor);
@@ -1014,6 +1157,9 @@ namespace Assets.Scripts.Cameras
             return Mathf.Max(0f, _radius);
         }
 
+        /// <summary>
+        /// Refresh the focus orbit offset after zoom changes.
+        /// </summary>
         private void RefreshFocusOrbitOffset()
         {
             if (!focusOrbitInitialized)
@@ -1030,6 +1176,9 @@ namespace Assets.Scripts.Cameras
             focusOrbitOffset = GetOrbitOffset(_radius, focusOrbitYaw, focusOrbitPitch);
         }
 
+        /// <summary>
+        /// Refresh the overview orbit offset after zoom changes.
+        /// </summary>
         private void RefreshOverviewOrbitOffset()
         {
             if (!overviewOrbitInitialized)
@@ -1046,12 +1195,18 @@ namespace Assets.Scripts.Cameras
             overviewOrbitOffset = GetOrbitOffset(_radius, overviewOrbitYaw, overviewOrbitPitch);
         }
 
+        /// <summary>
+        /// Convert yaw/pitch orbit values into a local offset.
+        /// </summary>
         private Vector3 GetOrbitOffset(float _radius, float _yawDegrees, float _pitchDegrees)
         {
             Quaternion _rotation = Quaternion.Euler(_pitchDegrees, _yawDegrees, 0f);
             return _rotation * Vector3.back * _radius;
         }
 
+        /// <summary>
+        /// Try to assign the Sun as overview target from the simulator.
+        /// </summary>
         private void TryAssignOverviewTargetFromSimulator()
         {
             SolarSystemSimulator _simulator = FindFirstObjectByType<SolarSystemSimulator>();
@@ -1072,6 +1227,9 @@ namespace Assets.Scripts.Cameras
             }
         }
 
+        /// <summary>
+        /// Ensure an overview target is set.
+        /// </summary>
         private void EnsureOverviewTarget()
         {
             if (overviewTarget != null)
@@ -1082,11 +1240,17 @@ namespace Assets.Scripts.Cameras
             TryAssignOverviewTargetFromSimulator();
         }
 
+        /// <summary>
+        /// React to simulator visual preset changes.
+        /// </summary>
         private void HandleVisualPresetChanged(int _presetIndex)
         {
             ApplyVisualPreset(_presetIndex);
         }
 
+        /// <summary>
+        /// Apply preset-specific camera overrides.
+        /// </summary>
         private void ApplyVisualPreset(int _presetIndex)
         {
             bool _wasRealistic = isRealisticPreset;

@@ -7,17 +7,17 @@ namespace Assets.Scripts.Guis
     /// </summary>
     public static partial class Gui
     {
-#region Initialize
+        #region Initialization
         /// <summary>
         /// Allocate cached panel and runtime control widgets.
         /// </summary>
         public static void Initialize()
         {
-            AllocateInteractionWidgets();
+            EnsureRuntimeWidgets();
         }
-#endregion
+        #endregion
 
-#region UnInitialize
+        #region Cleanup
         /// <summary>
         /// Clear cached panel and runtime control widgets.
         /// </summary>
@@ -25,6 +25,6 @@ namespace Assets.Scripts.Guis
         {
             DeallocateInteractionWidgets();
         }
-#endregion
+        #endregion
     }
 }

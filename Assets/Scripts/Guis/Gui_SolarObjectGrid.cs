@@ -21,6 +21,7 @@ namespace Assets.Scripts.Guis
         [SerializeField] private string focusButtonTemplateName = "Focus_SolarObject_VCinemachine_Button";
         [SerializeField] private string overviewButtonName = "View_SolarSystem_Overview_VCinemachine_Button";
         [SerializeField] private string buttonTextChildName = "Text";
+        [SerializeField] private string avatarImageChildName = "SolarObjectAvatar";
 
         [Header("Scene References")]
         [SerializeField] private SolarSystemSimulator? simulator;
@@ -34,6 +35,7 @@ namespace Assets.Scripts.Guis
         private readonly List<Button> spawnedButtons = new();
         private bool isInitialized = false;
         private bool isBound = false;
+        private bool avatarWarningLogged = false;
         #endregion
 
         #region Unity Lifecycle
@@ -82,6 +84,9 @@ namespace Assets.Scripts.Guis
         #endregion
 
         #region Scene Resolution
+        /// <summary>
+        /// Resolve scene references for the grid and camera controller.
+        /// </summary>
         private bool ResolveSceneReferences()
         {
             if (cameraController == null)
@@ -125,6 +130,9 @@ namespace Assets.Scripts.Guis
             return true;
         }
 
+        /// <summary>
+        /// Find a RectTransform by name under the active canvas.
+        /// </summary>
         private RectTransform? FindRectTransformByName(string _name)
         {
             Transform? _transform = FindTransformByName(_name);
@@ -143,6 +151,9 @@ namespace Assets.Scripts.Guis
             return _rect;
         }
 
+        /// <summary>
+        /// Find a Button by name under the active canvas.
+        /// </summary>
         private Button? FindButtonByName(string _name)
         {
             Transform? _transform = FindTransformByName(_name);
@@ -161,6 +172,9 @@ namespace Assets.Scripts.Guis
             return _button;
         }
 
+        /// <summary>
+        /// Find any Transform by name under the active canvas.
+        /// </summary>
         private Transform? FindTransformByName(string _name)
         {
             if (string.IsNullOrWhiteSpace(_name))
@@ -190,6 +204,9 @@ namespace Assets.Scripts.Guis
         #endregion
 
         #region Simulator Binding
+        /// <summary>
+        /// Subscribe to simulator events once.
+        /// </summary>
         private void BindSimulator()
         {
             if (simulator == null || isBound)
@@ -201,6 +218,9 @@ namespace Assets.Scripts.Guis
             isBound = true;
         }
 
+        /// <summary>
+        /// Unsubscribe from simulator events.
+        /// </summary>
         private void UnbindSimulator()
         {
             if (simulator == null || !isBound)
@@ -212,6 +232,9 @@ namespace Assets.Scripts.Guis
             isBound = false;
         }
 
+        /// <summary>
+        /// Rebuild the grid whenever solar objects are reloaded.
+        /// </summary>
         private void HandleSolarObjectsReady(IReadOnlyList<SolarObject> _objects)
         {
             BuildGrid(_objects);
@@ -220,6 +243,9 @@ namespace Assets.Scripts.Guis
         #endregion
 
         #region Grid Building
+        /// <summary>
+        /// Spawn focus buttons for each solar object in the dataset.
+        /// </summary>
         private void BuildGrid(IReadOnlyList<SolarObject> _objects)
         {
             if (gridRoot == null || focusButtonTemplate == null)
@@ -239,6 +265,10 @@ namespace Assets.Scripts.Guis
             for (int _i = 0; _i < _objects.Count; _i++)
             {
                 SolarObject _object = _objects[_i];
+                if (!_object.gameObject.activeSelf)
+                {
+                    continue;
+                }
 
                 Button _button = Instantiate(focusButtonTemplate, gridRoot);
                 _button.name = $"Focus_{_object.name}";
@@ -247,6 +277,7 @@ namespace Assets.Scripts.Guis
                 _button.interactable = true;
 
                 SetButtonText(_button, _object.name);
+                SetButtonAvatar(_button, _object);
 
                 SolarObject _target = _object;
                 _button.onClick.RemoveAllListeners();
@@ -258,6 +289,9 @@ namespace Assets.Scripts.Guis
             HelpLogs.Log("Gui", $"Spawned {spawnedButtons.Count} solar object focus buttons.");
         }
 
+        /// <summary>
+        /// Destroy any previously spawned buttons.
+        /// </summary>
         private void ClearSpawnedButtons()
         {
             for (int _i = 0; _i < spawnedButtons.Count; _i++)
@@ -275,6 +309,9 @@ namespace Assets.Scripts.Guis
             spawnedButtons.Clear();
         }
 
+        /// <summary>
+        /// Set the text label for a focus button.
+        /// </summary>
         private void SetButtonText(Button _button, string _label)
         {
             TextMeshProUGUI? _text = null;
@@ -301,9 +338,69 @@ namespace Assets.Scripts.Guis
 
             _text.text = _label;
         }
+
+        /// <summary>
+        /// Set the avatar sprite for a focus button (if available).
+        /// </summary>
+        private void SetButtonAvatar(Button _button, SolarObject _object)
+        {
+            if (string.IsNullOrWhiteSpace(avatarImageChildName))
+            {
+                return;
+            }
+
+            Transform _child = _button.transform.Find(avatarImageChildName);
+            if (_child == null)
+            {
+                if (!avatarWarningLogged)
+                {
+                    HelpLogs.Warn(
+                        "Gui",
+                        $"Button '{_button.name}' is missing an Image child named '{avatarImageChildName}'."
+                    );
+                    avatarWarningLogged = true;
+                }
+
+                return;
+            }
+
+            Image _image = _child.GetComponent<Image>();
+            if (_image == null)
+            {
+                if (!avatarWarningLogged)
+                {
+                    HelpLogs.Warn(
+                        "Gui",
+                        $"Button '{_button.name}' child '{avatarImageChildName}' is missing an Image component."
+                    );
+                    avatarWarningLogged = true;
+                }
+
+                return;
+            }
+
+            Sprite? _sprite = _object.AvatarSprite;
+            if (_sprite == null)
+            {
+                return;
+            }
+
+            if (_image.sprite != _sprite)
+            {
+                _image.sprite = _sprite;
+            }
+
+            if (!_image.enabled)
+            {
+                _image.enabled = true;
+            }
+        }
         #endregion
 
         #region Button Handlers
+        /// <summary>
+        /// Bind the overview button click handler.
+        /// </summary>
         private void BindOverviewButton()
         {
             if (overviewButton == null)
@@ -314,6 +411,9 @@ namespace Assets.Scripts.Guis
             overviewButton.onClick.AddListener(HandleOverviewClicked);
         }
 
+        /// <summary>
+        /// Unbind the overview button click handler.
+        /// </summary>
         private void UnbindOverviewButton()
         {
             if (overviewButton == null)
@@ -324,6 +424,9 @@ namespace Assets.Scripts.Guis
             overviewButton.onClick.RemoveListener(HandleOverviewClicked);
         }
 
+        /// <summary>
+        /// Focus the camera on the selected solar object.
+        /// </summary>
         private void HandleFocusClicked(SolarObject _object)
         {
             HelpLogs.Log("Gui", $"Focus button pressed: {_object.name}");
@@ -336,6 +439,9 @@ namespace Assets.Scripts.Guis
             cameraController.FocusOn(_object);
         }
 
+        /// <summary>
+        /// Switch the camera to the overview mode.
+        /// </summary>
         private void HandleOverviewClicked()
         {
             HelpLogs.Log("Gui", "Overview button pressed.");
@@ -350,6 +456,9 @@ namespace Assets.Scripts.Guis
         #endregion
 
         #region Overview Target
+        /// <summary>
+        /// Try to assign the Sun as the overview target.
+        /// </summary>
         private void TryAssignOverviewTarget(IReadOnlyList<SolarObject> _objects)
         {
             if (cameraController == null || cameraController.HasOverviewTarget)

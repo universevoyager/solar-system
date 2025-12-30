@@ -11,6 +11,7 @@ namespace Assets.Scripts.Data
     [Serializable]
     public sealed class SolarSystemData
     {
+        #region Properties
         // Raw metadata block from the dataset.
         [JsonProperty("meta")]
         public MetaData? Meta { get; set; }
@@ -22,5 +23,6 @@ namespace Assets.Scripts.Data
         // All solar object entries.
         [JsonProperty("solar_objects")]
         public List<SolarObjectData>? SolarObjects { get; set; }
+        #endregion
     }
 }

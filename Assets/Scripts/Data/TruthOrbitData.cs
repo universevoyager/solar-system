@@ -10,9 +10,10 @@ namespace Assets.Scripts.Data
     [Serializable]
     public sealed class TruthOrbitData
     {
-        // Orbit model name (circular or keplerian).
+        #region Properties
+        // Orbit model name (keplerian only).
         [JsonProperty("model")]
-        public string Model { get; set; } = "circular";
+        public string Model { get; set; } = "keplerian";
 
         // Orbital period (days).
         [JsonProperty("orbital_period_days")]
@@ -45,5 +46,6 @@ namespace Assets.Scripts.Data
 
         [JsonProperty("mean_anomaly_deg")]
         public double? MeanAnomalyDeg { get; set; }
+        #endregion
     }
 }

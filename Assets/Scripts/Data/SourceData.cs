@@ -10,6 +10,7 @@ namespace Assets.Scripts.Data
     [Serializable]
     public sealed class SourceData
     {
+        #region Properties
         // Source name or organization.
         [JsonProperty("name")]
         public string? Name { get; set; }
@@ -17,5 +18,6 @@ namespace Assets.Scripts.Data
         // Source URL for attribution.
         [JsonProperty("url")]
         public string? Url { get; set; }
+        #endregion
     }
 }

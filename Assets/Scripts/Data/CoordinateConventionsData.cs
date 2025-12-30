@@ -11,6 +11,7 @@ namespace Assets.Scripts.Data
     [Serializable]
     public sealed class CoordinateConventionsData
     {
+        #region Properties
         // Optional dataset comment.
         [JsonProperty("__comment")]
         public string? Comment { get; set; }
@@ -26,5 +27,6 @@ namespace Assets.Scripts.Data
         // Axis labels that define the orbit plane (e.g., ["x", "z"]).
         [JsonProperty("orbit_plane_axes")]
         public List<string>? OrbitPlaneAxes { get; set; }
+        #endregion
     }
 }
