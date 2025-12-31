@@ -17,15 +17,22 @@ namespace Assets.Scripts.Guis
     {
         #region Serialized Fields
         [Header("Scene Names")]
+        [Tooltip("Grid Layout Group object name. Example: SolarObjects_View_Interaction_GridLayoutGroup")]
         [SerializeField] private string gridLayoutGroupName = "SolarObjects_View_Interaction_GridLayoutGroup";
+        [Tooltip("Focus button template object name. Example: Focus_SolarObject_VCinemachine_Button")]
         [SerializeField] private string focusButtonTemplateName = "Focus_SolarObject_VCinemachine_Button";
+        [Tooltip("Overview button object name. Example: View_SolarSystem_Overview_VCinemachine_Button")]
         [SerializeField] private string overviewButtonName = "View_SolarSystem_Overview_VCinemachine_Button";
+        [Tooltip("Child text object name under each button. Example: Text")]
         [SerializeField] private string buttonTextChildName = "Text";
+        [Tooltip("Child image object name for avatars. Example: SolarObjectAvatar")]
         [SerializeField] private string avatarImageChildName = "SolarObjectAvatar";
 
         [Header("Scene References")]
+        [Tooltip("Optional override. Leave empty to auto-find SolarSystemSimulator. Example: SolarSystemSimulator")]
         [SerializeField] private SolarSystemSimulator? simulator;
-        [SerializeField] private SolarSystemCameraController? cameraController;
+        [Tooltip("Optional override. Leave empty to auto-find SolarSystemCamera. Example: SolarSystemCamera")]
+        [SerializeField] private SolarSystemCamera? cameraController;
         #endregion
 
         #region Runtime State
@@ -91,10 +98,10 @@ namespace Assets.Scripts.Guis
         {
             if (cameraController == null)
             {
-                cameraController = FindFirstObjectByType<SolarSystemCameraController>();
+                cameraController = FindFirstObjectByType<SolarSystemCamera>();
                 if (cameraController == null)
                 {
-                    HelpLogs.Warn("Gui", "SolarSystemCameraController not found in scene.");
+                    HelpLogs.Warn("Gui", "SolarSystemCamera not found in scene.");
                 }
             }
 
@@ -432,7 +439,7 @@ namespace Assets.Scripts.Guis
             HelpLogs.Log("Gui", $"Focus button pressed: {_object.name}");
             if (cameraController == null)
             {
-                HelpLogs.Warn("Gui", "SolarSystemCameraController not found for focus action.");
+                HelpLogs.Warn("Gui", "SolarSystemCamera not found for focus action.");
                 return;
             }
 
@@ -447,7 +454,7 @@ namespace Assets.Scripts.Guis
             HelpLogs.Log("Gui", "Overview button pressed.");
             if (cameraController == null)
             {
-                HelpLogs.Warn("Gui", "SolarSystemCameraController not found for overview action.");
+                HelpLogs.Warn("Gui", "SolarSystemCamera not found for overview action.");
                 return;
             }
 

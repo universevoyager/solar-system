@@ -171,14 +171,14 @@ Optional:
 
 Text labels (`TextMeshProUGUI`):
 - `TimeScaleValueText`
-- `VisualPresetValueText`
+- `RealismValueText`
 - `AppVersionText`
 
 Buttons (`UnityEngine.UI.Button`):
 - `TimeScaleMinusButton`
 - `TimeScalePlusButton`
-- `VisualPresetMinusButton`
-- `VisualPresetPlusButton`
+- `RealismMinusButton`
+- `RealismPlusButton`
 - `CameraOrbitUpButton`
 - `CameraOrbitDownButton`
 - `CameraOrbitLeftButton`
@@ -198,14 +198,15 @@ Control levels (names and values):
 | Control | Levels |
 | --- | --- |
 | Time Scale | Default = default, Speed_1000x = 1,000x, Speed_10000x = 10,000x, Speed_200000x = 200,000x |
-| Visual Preset | Realistic = keplerian dataset + defaults + orbit segments 128, Simulation (default) = distance 0.02 + radius 0.25 + orbit segments 64 |
+| Realism | 0.00 = Simulation-style scaling, 1.00 = full JSON realism (blends in between) |
 
-Defaults come from `global_visual_defaults` for distance and radius (Realistic preset), while Time Scale is set in code.
-Orbit segments are fixed per preset: 128 (Realistic) and 64 (Simulation). Distance km/unit + moon clearance remain at their default values across presets.
-When Simulation is active, runtime line widths are scaled down by 0.25x.
-Simulation also applies an extra scaling profile (type-based size scaling + inner/outer planet distance scaling) on top of `visual_defaults`, including a moon distance scale and optional orbit tilt alignment.
-When Realistic is active and runtime controls are enabled, per-object `visual_defaults` multipliers are ignored so sizes/distances use raw truth values. If runtime controls are disabled, `visual_defaults` remain active.
-Both presets use the same JSON dataset, only the visual scaling differs.
+Realism blends between the Simulation visuals and raw JSON values
+- At 0.00, global distance and radius multipliers use the Simulation targets and the Simulation scale profile is fully applied
+- At 1.00, global multipliers use `global_visual_defaults`, per-object `visual_defaults` are neutralized, and Simulation scaling fades out
+- Orbit segments and runtime line width scaling interpolate between the Simulation target and the dataset default
+- The buttons step realism by `realismStep` (default 0.05) in code
+
+The JSON dataset stays the same, only the visualization scaling changes
 
 ---
 
@@ -228,10 +229,10 @@ Add these components to the scene:
 - `SolarSystemCameraController` (camera logic)
 - `Gui_SolarObjectGrid` (builds focus buttons at runtime)
 
-Realistic preset behavior:
-- Overview zoom range expands to 50–500, with faster zoom speed than Simulation.
-- Focus zoom minimum is slightly increased to reduce clipping into objects.
-- Proxy targets and zoom distance are smoothed in `SolarSystemCameraController` for cleaner transitions.
+Realism camera behavior:
+- As realism increases, overview zoom range and zoom speed increase
+- Focus zoom minimum increases to reduce clipping into bodies at full realism
+- Large-body padding used in Simulation fades out as realism approaches 1.00
 
 ---
 
@@ -249,8 +250,7 @@ Global toggles for orbit paths, spin axis, and world-up lines are available in t
 ---
 
 ## Performance Notes (WebGL)
-- Orbit line resolution uses runtime presets (Realistic = 128, Simulation = 64). With runtime controls off, it falls back to `global_visual_defaults.orbit_path_segments_default`.
-- Many objects + high segment counts can be expensive. Reduce segments for WebGL builds.
+- Orbit line resolution interpolates between `simulationOrbitSegments` and the dataset default (or override). Many objects + high segment counts can be expensive.
 - Prefer compressed textures and reasonable texture sizes for WebGL memory limits.
 
 ---
@@ -259,7 +259,7 @@ Global toggles for orbit paths, spin axis, and world-up lines are available in t
 - Changing orbit parameters at runtime is not supported, make sure to edit the JSON and restart.
 - Some Saturn moons have incorrect orbits outside Saturn's ring tilt (math mismatch).
 - Planetary shadows on some moons are missing or inconsistent, they should be occluded at certain angles.
-- Realistic-size presets need a larger camera distance, the current focus distance range is tuned for the Simulation preset.
+- High realism (near 1.00) needs a larger camera distance, the current focus distance range is tuned for the Simulation target.
 - Maximum time scale (200,000x) can still be too fast for some devices.
 - Grid layout buttons can override their borders when sized by layout groups.
 - Asteroid belt is not implemented yet.
@@ -280,6 +280,7 @@ Global toggles for orbit paths, spin axis, and world-up lines are available in t
 - Keep namespaces aligned with folder structure (e.g. `Assets.Scripts.Runtime`).
 - Avoid obsolete APIs and keep code current with the project dependencies.
 - Use `#region` blocks to group related fields and methods.
+- Partial class files use underscores, e.g. `SolarSystemCamera_PublicAPI.cs`.
 
 ---
 

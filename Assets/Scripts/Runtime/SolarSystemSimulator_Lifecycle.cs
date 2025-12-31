@@ -1,0 +1,133 @@
+#nullable enable
+using System.Collections.Generic;
+using Assets.Scripts.Guis;
+using Assets.Scripts.Helpers.Debugging;
+using Assets.Scripts.Loading;
+using UnityEngine;
+
+namespace Assets.Scripts.Runtime
+{
+    public sealed partial class SolarSystemSimulator
+    {
+        #region Unity Lifecycle
+        /// <summary>
+        /// Load data, build context, and spawn all solar objects.
+        /// </summary>
+        private void Awake()
+        {
+            Application.targetFrameRate = 60;
+
+            realismLevel = Mathf.Clamp01(realismLevel);
+
+            activeDatabase = SolarSystemJsonLoader.LoadOrLog(resourcesJsonPathWithoutExtension);
+            if (activeDatabase == null)
+            {
+                HelpLogs.Error(
+                    "Simulator",
+                    $"Failed to load dataset '{resourcesJsonPathWithoutExtension}'. Simulator is not active."
+                );
+                enabled = false;
+                return;
+            }
+
+            LoadPrefabsFromResources();
+
+            ApplyDatabase(activeDatabase, true);
+            ApplyHypotheticalVisibility();
+            SolarObjectsReady?.Invoke(solarObjectsOrdered);
+
+            HelpLogs.Log("Simulator", $"Ready. Objects spawned: {solarObjectsById.Count}");
+        }
+
+        /// <summary>
+        /// Subscribe to runtime UI events.
+        /// </summary>
+        private void OnEnable()
+        {
+            if (!enableRuntimeControls)
+            {
+                return;
+            }
+
+            Gui.TimeScaleStepRequested += HandleTimeScaleStepRequested;
+            Gui.RealismStepRequested += HandleRealismStepRequested;
+            Gui.OrbitLinesToggled += HandleOrbitLinesToggled;
+            Gui.SpinAxisToggled += HandleSpinAxisToggled;
+            Gui.WorldUpToggled += HandleWorldUpToggled;
+            Gui.SpinDirectionToggled += HandleSpinDirectionToggled;
+            Gui.HypotheticalToggleChanged += HandleHypotheticalToggleChanged;
+        }
+
+        /// <summary>
+        /// Initialize runtime controls after scene objects are ready.
+        /// </summary>
+        private void Start()
+        {
+            if (!enableRuntimeControls)
+            {
+                return;
+            }
+
+            Gui.Initialize();
+            SetupRuntimeGui();
+            runtimeControlsInitialized = true;
+
+            UpdateAppVersionText();
+            ApplyRealismLevel(realismLevel, true);
+            UpdateTimeScaleText();
+            UpdateHypotheticalToggleText();
+        }
+
+        /// <summary>
+        /// Cleanup runtime UI references.
+        /// Unsubscribe from runtime UI events.
+        /// </summary>
+        private void OnDestroy()
+        {
+            if (!enableRuntimeControls)
+            {
+                return;
+            }
+
+            Gui.TimeScaleStepRequested -= HandleTimeScaleStepRequested;
+            Gui.RealismStepRequested -= HandleRealismStepRequested;
+            Gui.OrbitLinesToggled -= HandleOrbitLinesToggled;
+            Gui.SpinAxisToggled -= HandleSpinAxisToggled;
+            Gui.WorldUpToggled -= HandleWorldUpToggled;
+            Gui.SpinDirectionToggled -= HandleSpinDirectionToggled;
+            Gui.HypotheticalToggleChanged -= HandleHypotheticalToggleChanged;
+
+            Gui.UnInitialize();
+        }
+
+        /// <summary>
+        /// Advance simulation and update runtime labels.
+        /// </summary>
+        private void Update()
+        {
+            if (activeDatabase == null)
+            {
+                return;
+            }
+
+            // Advance simulation clock and update solar objects.
+            simulationTimeSeconds += Time.deltaTime * timeScale;
+
+            foreach (KeyValuePair<string, SolarObject> _pair in solarObjectsById)
+            {
+                _pair.Value.Simulate(simulationTimeSeconds);
+            }
+
+            if (enableRuntimeControls && runtimeControlsInitialized)
+            {
+                timeLabelRefreshTimer += Time.deltaTime;
+                if (timeLabelRefreshTimer >= 1.0f)
+                {
+                    timeLabelRefreshTimer = 0.0f;
+                    UpdateTimeScaleText();
+                }
+            }
+        }
+        #endregion
+    }
+}

@@ -14,25 +14,45 @@ namespace Assets.Scripts.Guis
     public sealed class Gui_RuntimeControlEvents : MonoBehaviour
     {
         #region Serialized Fields
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.OrbitLinesToggle. Example: OrbitLinesToggle")]
         [SerializeField] private Toggle? orbitLinesToggle;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.SpinAxisToggle. Example: SpinAxisToggle")]
         [SerializeField] private Toggle? spinAxisToggle;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.WorldUpToggle. Example: WorldUpToggle")]
         [SerializeField] private Toggle? worldUpToggle;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.SpinDirectionToggle. Example: SpinDirectionToggle")]
         [SerializeField] private Toggle? spinDirectionToggle;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.TimeScaleMinusButton. Example: TimeScaleMinusButton")]
         [SerializeField] private Button? timeScaleMinusButton;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.TimeScalePlusButton. Example: TimeScalePlusButton")]
         [SerializeField] private Button? timeScalePlusButton;
-        [SerializeField] private Button? visualPresetMinusButton;
-        [SerializeField] private Button? visualPresetPlusButton;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.RealismMinusButton. Example: RealismMinusButton")]
+        [SerializeField] private Button? realismMinusButton;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.RealismPlusButton. Example: RealismPlusButton")]
+        [SerializeField] private Button? realismPlusButton;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.CameraOrbitUpButton. Example: CameraOrbitUpButton")]
         [SerializeField] private Button? cameraOrbitUpButton;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.CameraOrbitDownButton. Example: CameraOrbitDownButton")]
         [SerializeField] private Button? cameraOrbitDownButton;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.CameraOrbitLeftButton. Example: CameraOrbitLeftButton")]
         [SerializeField] private Button? cameraOrbitLeftButton;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.CameraOrbitRightButton. Example: CameraOrbitRightButton")]
         [SerializeField] private Button? cameraOrbitRightButton;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.CameraZoomInButton. Example: CameraZoomInButton")]
         [SerializeField] private Button? cameraZoomInButton;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.CameraZoomOutButton. Example: CameraZoomOutButton")]
         [SerializeField] private Button? cameraZoomOutButton;
+        [Tooltip("Optional override. Leave empty to auto-bind Gui.HypotheticalToggle. Example: HypotheticalToggleButton")]
         [SerializeField] private Toggle? planetXToggle;
 
         [Header("Hold Repeat")]
+        [Tooltip("Allow press-and-hold repeat for buttons. Example: true")]
         [SerializeField] private bool enableHoldRepeat = true;
+        [Tooltip("Seconds before repeat starts. Higher = longer delay, lower = faster repeat start. Example: 0.35")]
+        [Range(0.05f, 2f)]
         [SerializeField] private float holdRepeatInitialDelay = 0.35f;
+        [Tooltip("Seconds between repeats while held. Lower = faster repeats, higher = slower. Example: 0.08")]
+        [Range(0.02f, 0.5f)]
         [SerializeField] private float holdRepeatInterval = 0.08f;
         #endregion
 
@@ -154,14 +174,14 @@ namespace Assets.Scripts.Guis
                 timeScalePlusButton = Gui.TimeScalePlusButton;
             }
 
-            if (visualPresetMinusButton == null)
+            if (realismMinusButton == null)
             {
-                visualPresetMinusButton = Gui.VisualPresetMinusButton;
+                realismMinusButton = Gui.RealismMinusButton;
             }
 
-            if (visualPresetPlusButton == null)
+            if (realismPlusButton == null)
             {
-                visualPresetPlusButton = Gui.VisualPresetPlusButton;
+                realismPlusButton = Gui.RealismPlusButton;
             }
 
             if (cameraOrbitUpButton == null)
@@ -261,24 +281,24 @@ namespace Assets.Scripts.Guis
                 HelpLogs.Warn("Gui", "Missing time scale buttons.");
             }
 
-            bool presetButtonsBound = false;
-            if (visualPresetMinusButton != null)
+            bool realismButtonsBound = false;
+            if (realismMinusButton != null)
             {
-                visualPresetMinusButton.onClick.AddListener(HandleVisualPresetMinus);
-                presetButtonsBound = true;
-                RegisterHoldRepeat(visualPresetMinusButton, HandleVisualPresetMinus);
+                realismMinusButton.onClick.AddListener(HandleRealismMinus);
+                realismButtonsBound = true;
+                RegisterHoldRepeat(realismMinusButton, HandleRealismMinus);
             }
 
-            if (visualPresetPlusButton != null)
+            if (realismPlusButton != null)
             {
-                visualPresetPlusButton.onClick.AddListener(HandleVisualPresetPlus);
-                presetButtonsBound = true;
-                RegisterHoldRepeat(visualPresetPlusButton, HandleVisualPresetPlus);
+                realismPlusButton.onClick.AddListener(HandleRealismPlus);
+                realismButtonsBound = true;
+                RegisterHoldRepeat(realismPlusButton, HandleRealismPlus);
             }
 
-            if (!presetButtonsBound)
+            if (!realismButtonsBound)
             {
-                HelpLogs.Warn("Gui", "Missing visual preset buttons.");
+                HelpLogs.Warn("Gui", "Missing realism buttons.");
             }
 
             bool cameraOrbitButtonsBound = false;
@@ -344,7 +364,7 @@ namespace Assets.Scripts.Guis
             isBound =
                 boundAny ||
                 timeScaleButtonsBound ||
-                presetButtonsBound ||
+                realismButtonsBound ||
                 cameraOrbitButtonsBound ||
                 cameraZoomButtonsBound;
         }
@@ -389,14 +409,14 @@ namespace Assets.Scripts.Guis
                 timeScalePlusButton.onClick.RemoveListener(HandleTimeScalePlus);
             }
 
-            if (visualPresetMinusButton != null)
+            if (realismMinusButton != null)
             {
-                visualPresetMinusButton.onClick.RemoveListener(HandleVisualPresetMinus);
+                realismMinusButton.onClick.RemoveListener(HandleRealismMinus);
             }
 
-            if (visualPresetPlusButton != null)
+            if (realismPlusButton != null)
             {
-                visualPresetPlusButton.onClick.RemoveListener(HandleVisualPresetPlus);
+                realismPlusButton.onClick.RemoveListener(HandleRealismPlus);
             }
 
             if (cameraOrbitUpButton != null)
@@ -571,14 +591,14 @@ namespace Assets.Scripts.Guis
             Gui.NotifyTimeScaleStepRequested(1);
         }
 
-        private void HandleVisualPresetMinus()
+        private void HandleRealismMinus()
         {
-            Gui.NotifyVisualPresetStepRequested(-1);
+            Gui.NotifyRealismStepRequested(-1);
         }
 
-        private void HandleVisualPresetPlus()
+        private void HandleRealismPlus()
         {
-            Gui.NotifyVisualPresetStepRequested(1);
+            Gui.NotifyRealismStepRequested(1);
         }
 
         private void HandleCameraOrbitUp()

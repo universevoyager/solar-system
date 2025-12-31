@@ -374,6 +374,14 @@ MonoBehaviour:
   resourcesJsonPathWithoutExtension: SolarSystemData_J2000_Keplerian_all_moons
   prefabsResourcesFolder: SolarObjects
   enableRuntimeControls: 1
+  realismLevel: 0
+  realismStep: 0.05
+  simulationGlobalDistanceMultiplier: 0.02
+  simulationGlobalRadiusMultiplier: 0.25
+  simulationOrbitSegments: 64
+  simulationRuntimeLineWidthScale: 0.25
+  realismOrbitSegmentsOverride: 0
+  realismRuntimeLineWidthScale: 1
   sunLightNormalIntensity: 30000
   sunLightNormalRange: 1000
   sunLightMinimalIntensity: 25
@@ -442,7 +450,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.39215687}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.78431374}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -650,7 +658,7 @@ GameObject:
   - component: {fileID: 203631739}
   - component: {fileID: 203631738}
   m_Layer: 5
-  m_Name: VisualPresetValueText
+  m_Name: RealismValueText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -695,7 +703,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '#value visual'
+  m_text: '#value realism'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
@@ -1346,7 +1354,7 @@ GameObject:
   - component: {fileID: 272517903}
   - component: {fileID: 272517904}
   m_Layer: 0
-  m_Name: SolarSystemCameraController
+  m_Name: SolarSystemCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1378,7 +1386,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0eb7615ec348d4f6fb666d1704de9bb6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Cameras.SolarSystemCameraController
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Cameras.SolarSystemCamera
   focusVirtualCameraName: Follow-SolarObject-VCinemachine
   overviewVirtualCameraName: Overview-SolarSystem-VCinemachine
   focusProxyName: Focus_Proxy
@@ -1403,29 +1411,29 @@ MonoBehaviour:
   focusDistanceSun: 1.8
   focusMediumSizeThreshold: 0.3
   focusZoomMinMultiplier: 0.15
-  focusZoomMaxMultiplier: 0.75
+  focusZoomMaxMultiplier: 1.5
   focusZoomMinDistanceSun: 1.5
   simulationLargeBodyMinDistanceOffset: 0.0765
   focusLargeBodyZoomInAllowance: 0
   focusSunZoomInAllowance: 0.5390625
   focusZoomAbsoluteMinDistance: 0.05
   overviewZoomMinDistance: 2
-  overviewZoomMaxDistance: 20
+  overviewZoomMaxDistance: 40
   overviewDefaultDistance: 5
   overviewZoomSpeedMultiplier: 5
   focusZoomStep: 0.015
   zoomStep: 0.1
   realisticFocusZoomMinMultiplier: 0.6
   realisticOverviewZoomMinDistance: 50
-  realisticOverviewZoomMaxDistance: 125
-  realisticOverviewZoomSpeedMultiplier: 10
+  realisticOverviewZoomMaxDistance: 1000
+  realisticOverviewZoomSpeedMultiplier: 25
   orbitStep: 0.1
   focusOrbitMaxOffset: 1
   overviewOrbitMaxOffset: 5
   orbitMaxPitchDegrees: 80
   orbitRadiusMaxFactor: 0.5
   orbitStepMaxDegrees: 10
-  overviewOrbitStepDistanceMultiplier: 2.5
+  overviewOrbitStepDistanceMultiplier: 4
   overviewOrbitStepBoostDistance: 25
 --- !u!1 &283102852
 GameObject:
@@ -2192,8 +2200,8 @@ MonoBehaviour:
   spinDirectionToggle: {fileID: 710316504}
   timeScaleMinusButton: {fileID: 945597181}
   timeScalePlusButton: {fileID: 1668685107}
-  visualPresetMinusButton: {fileID: 1495504245}
-  visualPresetPlusButton: {fileID: 556893502}
+  realismMinusButton: {fileID: 1495504245}
+  realismPlusButton: {fileID: 556893502}
   cameraOrbitUpButton: {fileID: 152821020}
   cameraOrbitDownButton: {fileID: 323390933}
   cameraOrbitLeftButton: {fileID: 1629420982}
@@ -2676,7 +2684,7 @@ GameObject:
   - component: {fileID: 549534234}
   - component: {fileID: 549534235}
   m_Layer: 5
-  m_Name: Timescale
+  m_Name: Time_Scale
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2725,12 +2733,12 @@ GameObject:
   - component: {fileID: 556893503}
   - component: {fileID: 556893502}
   m_Layer: 5
-  m_Name: VisualPresetPlusButton
+  m_Name: RealismPlusButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &556893501
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2966,7 +2974,7 @@ GameObject:
   - component: {fileID: 593998799}
   - component: {fileID: 593998800}
   m_Layer: 5
-  m_Name: VisualPreset
+  m_Name: Realism_Simulation_Scale
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5474,12 +5482,12 @@ GameObject:
   - component: {fileID: 1495504246}
   - component: {fileID: 1495504245}
   m_Layer: 5
-  m_Name: VisualPresetMinusButton
+  m_Name: RealismMinusButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1495504244
 RectTransform:
   m_ObjectHideFlags: 0

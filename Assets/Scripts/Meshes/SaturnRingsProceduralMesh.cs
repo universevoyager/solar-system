@@ -9,26 +9,33 @@ using UnityEngine.Rendering;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public sealed class SaturnRingsProceduralMesh : MonoBehaviour
 {
-    public float innerRadius = 0.8f;
-    public float outerRadius = 1.2f;
+    [Header("Shape")]
+    [Tooltip("Inner radius of the ring in local units. Higher = bigger hole. Example: 0.8")]
+    [Range(0.01f, 50f)] public float innerRadius = 0.8f;
+    [Tooltip("Outer radius of the ring in local units. Higher = wider ring. Example: 1.2")]
+    [Range(0.01f, 50f)] public float outerRadius = 1.2f;
 
-    [Min(3)] public int angleSegments = 256;
-    [Min(1)] public int radialSegments = 8;
+    [Tooltip("Number of segments around the ring. Higher = smoother, lower = cheaper. Example: 256")]
+    [Range(3, 2048)] public int angleSegments = 256;
+    [Tooltip("Number of segments between inner and outer radius. Higher = smoother, lower = cheaper. Example: 8")]
+    [Range(1, 256)] public int radialSegments = 8;
 
+    [Tooltip("Generate back faces so the ring is visible from below. Example: true. When false, ring is single-sided")]
     public bool doubleSided = true;
 
     [Header("UV Mapping (for strip textures)")]
-    [Tooltip("Crop the strip horizontally (useful if your strip has black margins).")]
+    [Tooltip("Crop the strip horizontally (useful if your strip has black margins). Higher = more crop. Example: 0.02")]
     [Range(0f, 1f)] public float uStart = 0.0f;
+    [Tooltip("Right edge of the strip crop. Lower = more crop. Example: 0.98")]
     [Range(0f, 1f)] public float uEnd   = 1.0f;
 
-    [Tooltip("How many times to repeat V around the ring (usually 1).")]
-    [Min(0.001f)] public float vRepeat = 1.0f;
+    [Tooltip("How many times to repeat V around the ring (usually 1). Higher = more repeats. Example: 1")]
+    [Range(0.1f, 10f)] public float vRepeat = 1.0f;
 
-    [Tooltip("Offset V around the ring (0..1).")]
+    [Tooltip("Offset V around the ring (0..1). Higher = rotate texture mapping. Example: 0")]
     [Range(0f, 1f)] public float vOffset = 0.0f;
 
-    [Tooltip("If true: U=radius, V=angle. If false: U=angle, V=radius.")]
+    [Tooltip("If true: U=radius, V=angle. If false: U=angle, V=radius. Example: true")]
     public bool radiusIsU = true;
 
     Mesh _mesh;

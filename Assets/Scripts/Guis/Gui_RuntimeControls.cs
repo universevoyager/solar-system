@@ -15,7 +15,7 @@ namespace Assets.Scripts.Guis
     {
         #region Runtime Widgets
         public static TextMeshProUGUI? TimeScaleValueText { get; private set; }
-        public static TextMeshProUGUI? VisualPresetValueText { get; private set; }
+        public static TextMeshProUGUI? RealismValueText { get; private set; }
         public static TextMeshProUGUI? AppVersionText { get; private set; }
 
         public static Toggle? OrbitLinesToggle { get; private set; }
@@ -25,8 +25,8 @@ namespace Assets.Scripts.Guis
         public static Toggle? HypotheticalToggle { get; private set; }
         public static Button? TimeScaleMinusButton { get; private set; }
         public static Button? TimeScalePlusButton { get; private set; }
-        public static Button? VisualPresetMinusButton { get; private set; }
-        public static Button? VisualPresetPlusButton { get; private set; }
+        public static Button? RealismMinusButton { get; private set; }
+        public static Button? RealismPlusButton { get; private set; }
         public static Button? CameraOrbitUpButton { get; private set; }
         public static Button? CameraOrbitDownButton { get; private set; }
         public static Button? CameraOrbitLeftButton { get; private set; }
@@ -49,7 +49,7 @@ namespace Assets.Scripts.Guis
 
         #region Events
         public static event Action<int>? TimeScaleStepRequested;
-        public static event Action<int>? VisualPresetStepRequested;
+        public static event Action<int>? RealismStepRequested;
         public static event Action<Vector2>? CameraOrbitStepRequested;
         public static event Action<int>? CameraZoomStepRequested;
         public static event Action<bool>? OrbitLinesToggled;
@@ -83,11 +83,11 @@ namespace Assets.Scripts.Guis
         }
 
         /// <summary>
-        /// Relay a visual preset step request to listeners.
+        /// Relay a realism step request to listeners.
         /// </summary>
-        public static void NotifyVisualPresetStepRequested(int _delta)
+        public static void NotifyRealismStepRequested(int _delta)
         {
-            VisualPresetStepRequested?.Invoke(_delta);
+            RealismStepRequested?.Invoke(_delta);
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace Assets.Scripts.Guis
 
             AppVersionText = GetTextByName("AppVersionText");
             TimeScaleValueText = GetTextByName("TimeScaleValueText");
-            VisualPresetValueText = GetTextByName("VisualPresetValueText");
+            RealismValueText = GetTextByName("RealismValueText");
 
             OrbitLinesToggle = GetToggleByName("OrbitLinesToggle");
             SpinAxisToggle = GetToggleByName("SpinAxisToggle");
@@ -249,8 +249,8 @@ namespace Assets.Scripts.Guis
             HypotheticalToggle = TryGetToggleByName("HypotheticalToggleButton");
             TimeScaleMinusButton = TryGetButtonByName("TimeScaleMinusButton");
             TimeScalePlusButton = TryGetButtonByName("TimeScalePlusButton");
-            VisualPresetMinusButton = TryGetButtonByName("VisualPresetMinusButton");
-            VisualPresetPlusButton = TryGetButtonByName("VisualPresetPlusButton");
+            RealismMinusButton = TryGetButtonByName("RealismMinusButton");
+            RealismPlusButton = TryGetButtonByName("RealismPlusButton");
             CameraOrbitUpButton = TryGetButtonByName("CameraOrbitUpButton");
             CameraOrbitDownButton = TryGetButtonByName("CameraOrbitDownButton");
             CameraOrbitLeftButton = TryGetButtonByName("CameraOrbitLeftButton");
@@ -259,7 +259,7 @@ namespace Assets.Scripts.Guis
             CameraZoomOutButton = TryGetButtonByName("CameraZoomOutButton");
 
             bool _hasTimeScaleButtons = TimeScaleMinusButton != null || TimeScalePlusButton != null;
-            bool _hasPresetButtons = VisualPresetMinusButton != null || VisualPresetPlusButton != null;
+            bool _hasRealismButtons = RealismMinusButton != null || RealismPlusButton != null;
             bool _hasCameraOrbitButtons =
                 CameraOrbitUpButton != null ||
                 CameraOrbitDownButton != null ||
@@ -273,9 +273,9 @@ namespace Assets.Scripts.Guis
                 HelpLogs.Warn("Gui", "Missing time scale buttons.");
             }
 
-            if (!_hasPresetButtons)
+            if (!_hasRealismButtons)
             {
-                HelpLogs.Warn("Gui", "Missing visual preset buttons.");
+                HelpLogs.Warn("Gui", "Missing realism buttons.");
             }
 
             if (!_hasCameraOrbitButtons)
@@ -312,7 +312,7 @@ namespace Assets.Scripts.Guis
 
             AppVersionText = null;
             TimeScaleValueText = null;
-            VisualPresetValueText = null;
+            RealismValueText = null;
 
             OrbitLinesToggle = null;
             SpinAxisToggle = null;
@@ -321,8 +321,8 @@ namespace Assets.Scripts.Guis
             HypotheticalToggle = null;
             TimeScaleMinusButton = null;
             TimeScalePlusButton = null;
-            VisualPresetMinusButton = null;
-            VisualPresetPlusButton = null;
+            RealismMinusButton = null;
+            RealismPlusButton = null;
             CameraOrbitUpButton = null;
             CameraOrbitDownButton = null;
             CameraOrbitLeftButton = null;
