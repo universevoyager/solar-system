@@ -265,6 +265,10 @@ Global toggles for orbit paths, spin axis, and world-up lines are available in t
 - Asteroid belt is not implemented yet.
 - Some moons need proper 3D models (e.g., Mars moons are still spheres).
 - Saturn rings need a complete rework.
+- Performance: orbit line positions are rebuilt every frame for moving primaries (moons), and axis/spin direction lines update every frame, which can be heavy on WebGL.
+- Performance: if MainCamera is missing, line scaling falls back to scanning cameras at runtime, which can be expensive.
+- Performance: spawn data logging is on by default and can spam logs in WebGL.
+- Performance: `Resources.LoadAll` loads all prefabs at startup, which can be heavy as content grows.
 
 ---
 

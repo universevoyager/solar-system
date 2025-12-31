@@ -118,6 +118,11 @@ namespace Assets.Scripts.Runtime
         /// </summary>
         public int VisualPresetLevelIndex => visualPresetLevelIndex;
 
+        /// <summary>
+        /// Current simulation time scale.
+        /// </summary>
+        public float TimeScale => timeScale;
+
         // Prefabs found in Resources by name.
         private readonly Dictionary<string, GameObject> prefabsByName =
             new(StringComparer.OrdinalIgnoreCase);
@@ -1096,7 +1101,7 @@ namespace Assets.Scripts.Runtime
             }
 
             string _version = string.IsNullOrWhiteSpace(Application.version) ? "0.0.0" : Application.version;
-            Gui.AppVersionText.text = $"Version: {_version}";
+            Gui.AppVersionText.text = $"v{_version}";
         }
 
         /// <summary>

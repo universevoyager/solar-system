@@ -206,9 +206,24 @@ namespace Assets.Scripts.Runtime
         public string Id => id;
 
         /// <summary>
+        /// Dataset id for the primary object (or empty if none).
+        /// </summary>
+        public string PrimaryId => primaryId;
+
+        /// <summary>
+        /// True when the object is a moon.
+        /// </summary>
+        public bool IsMoon => string.Equals(type, "moon", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
         /// True when the object is marked as hypothetical in the dataset.
         /// </summary>
         public bool IsHypothetical => isHypothetical;
+
+        /// <summary>
+        /// Primary solar object instance (when available).
+        /// </summary>
+        public SolarObject? PrimarySolarObject => primarySolarObject;
 
         /// <summary>
         /// Current diameter in Unity units (includes global radius multiplier).

@@ -54,6 +54,9 @@ namespace Assets.Scripts.Cameras
         [SerializeField] private float zoomMaxSpeed = 200f;
         [SerializeField] private float zoomMinSpeed = 0.1f;
         [SerializeField] private float zoomSpeedDistanceRange = 3f;
+        [SerializeField] private float focusSwitchSmoothTimeMultiplier = 2.0f;
+        [SerializeField] private float focusSwitchSpeedMultiplier = 0.35f;
+        [SerializeField] private float focusSwitchSmoothDuration = 0.6f;
 
         [Header("Priorities")]
         [SerializeField] private int focusPriority = 20;
@@ -69,29 +72,29 @@ namespace Assets.Scripts.Cameras
         [Header("Zoom Controls")]
         // Focus zoom limits expressed as multipliers of base distance.
         [SerializeField] private float focusZoomMinMultiplier = 0.15f;
-        [SerializeField] private float focusZoomMaxMultiplier = 3f;
+        [SerializeField] private float focusZoomMaxMultiplier = 0.75f;
         // Absolute minimum distance for the Sun (before allowance).
         [SerializeField] private float focusZoomMinDistanceSun = 1.5f;
         // Extra min-distance padding for large bodies in Simulation.
-        [SerializeField] private float simulationLargeBodyMinDistanceOffset = 0.15f;
+        [SerializeField] private float simulationLargeBodyMinDistanceOffset = 0.0765f;
         // Allow extra zoom-in on large bodies beyond base minimum.
         [SerializeField] private float focusLargeBodyZoomInAllowance = 0.0f;
         // Allow extra zoom-in on the Sun beyond the base minimum.
-        [SerializeField] private float focusSunZoomInAllowance = 0.25f;
+        [SerializeField] private float focusSunZoomInAllowance = 0.5390625f;
         // Hard clamp to prevent camera from going too close.
         [SerializeField] private float focusZoomAbsoluteMinDistance = 0.05f;
         [SerializeField] private float overviewZoomMinDistance = 2f;
-        [SerializeField] private float overviewZoomMaxDistance = 80f;
+        [SerializeField] private float overviewZoomMaxDistance = 20f;
         [SerializeField] private float overviewDefaultDistance = 5f;
         [SerializeField] private float overviewZoomSpeedMultiplier = 5f;
-        [SerializeField] private float focusZoomStep = 0.1f;
-        [SerializeField] private float zoomStep = 0.2f;
+        [SerializeField] private float focusZoomStep = 0.015f;
+        [SerializeField] private float zoomStep = 0.1f;
 
         [Header("Realistic Preset Overrides")]
         // Overrides used when Realistic preset is active.
         [SerializeField] private float realisticFocusZoomMinMultiplier = 0.6f;
         [SerializeField] private float realisticOverviewZoomMinDistance = 50f;
-        [SerializeField] private float realisticOverviewZoomMaxDistance = 500f;
+        [SerializeField] private float realisticOverviewZoomMaxDistance = 125f;
         [SerializeField] private float realisticOverviewZoomSpeedMultiplier = 10f;
 
         [Header("Orbit Controls")]
@@ -106,6 +109,14 @@ namespace Assets.Scripts.Cameras
         [SerializeField] private float overviewOrbitStepDistanceMultiplier = 2.5f;
         [SerializeField] private float overviewOrbitStepBoostDistance = 25f;
 
+        #endregion
+
+        #region Constants
+        private const float HighSpeedTimeScaleThreshold = 200000f;
+        private const float HighSpeedProxySmoothTimeMultiplier = 0.2f;
+        private const float HighSpeedProxySpeedMultiplier = 4f;
+        private const float HighSpeedZoomSmoothTimeMultiplier = 0.25f;
+        private const float HighSpeedZoomSpeedMultiplier = 3f;
         #endregion
 
         #region Runtime State
@@ -132,6 +143,7 @@ namespace Assets.Scripts.Cameras
         private float overviewDesiredDistance = 0f;
         private float focusDistanceVelocity = 0f;
         private float overviewDistanceVelocity = 0f;
+        private float focusSwitchTimer = 0f;
         #endregion
 
         #region Public API
@@ -225,6 +237,41 @@ namespace Assets.Scripts.Cameras
                 return;
             }
 
+            if (IsHighSpeedMode() && _solarObject.IsMoon)
+            {
+                SolarObject? _primary = _solarObject.PrimarySolarObject;
+                if (_primary == null && simulator != null && !string.IsNullOrWhiteSpace(_solarObject.PrimaryId))
+                {
+                    IReadOnlyList<SolarObject> _objects = simulator.OrderedSolarObjects;
+                    for (int _i = 0; _i < _objects.Count; _i++)
+                    {
+                        SolarObject _candidate = _objects[_i];
+                        if (string.Equals(_candidate.Id, _solarObject.PrimaryId, StringComparison.OrdinalIgnoreCase))
+                        {
+                            _primary = _candidate;
+                            break;
+                        }
+                    }
+                }
+
+                string _moonName = _solarObject.name;
+                if (_primary != null)
+                {
+                    HelpLogs.Warn(
+                        "Camera",
+                        $"High time scale active. Moon '{_moonName}' focus redirected to primary '{_primary.name}'."
+                    );
+                    _solarObject = _primary;
+                }
+                else
+                {
+                    HelpLogs.Warn(
+                        "Camera",
+                        $"High time scale active. Moon '{_moonName}' focus requested but primary not found."
+                    );
+                }
+            }
+
             bool _isNewTarget = focusSolarObject == null || focusSolarObject != _solarObject;
             focusTarget = _solarObject.transform;
             focusSolarObject = _solarObject;
@@ -232,13 +279,11 @@ namespace Assets.Scripts.Cameras
             if (_isNewTarget)
             {
                 bool _focusActive = IsFocusActive();
-                if (_focusActive)
-                {
-                    SyncFocusZoomFromCurrentView(_solarObject);
-                }
+                SetFocusZoomToMinimum(_solarObject);
 
                 focusProxyVelocity = Vector3.zero;
                 focusDistanceVelocity = 0f;
+                focusSwitchTimer = Mathf.Max(0f, focusSwitchSmoothDuration);
 
                 if (_focusActive || !focusOrbitInitialized)
                 {
@@ -353,6 +398,11 @@ namespace Assets.Scripts.Cameras
             UpdateProxyTransform(overviewProxy, overviewTarget, overviewOrbitOffset, ref overviewProxyVelocity);
             UpdateCameraDistances();
             UpdateOrbitOffsetsForDistances();
+
+            if (focusSwitchTimer > 0f)
+            {
+                focusSwitchTimer = Mathf.Max(0f, focusSwitchTimer - Time.deltaTime);
+            }
         }
 
         private void OnDestroy()
@@ -508,20 +558,31 @@ namespace Assets.Scripts.Cameras
             }
 
             Vector3 _targetPosition = _target.position + _offset;
-            if (smoothProxyMovement && proxySmoothTime > 0f)
+            float _smoothTime = proxySmoothTime;
+            float _minSpeed = proxyMinSpeed;
+            float _maxSpeedValue = proxyMaxSpeed;
+            float _range = proxySpeedDistanceRange;
+            if (IsHighSpeedMode())
+            {
+                _smoothTime *= HighSpeedProxySmoothTimeMultiplier;
+                _minSpeed *= HighSpeedProxySpeedMultiplier;
+                _maxSpeedValue *= HighSpeedProxySpeedMultiplier;
+            }
+
+            if (smoothProxyMovement && _smoothTime > 0f)
             {
                 float _maxSpeed = GetAdaptiveSpeed(
                     Vector3.Distance(_proxy.position, _targetPosition),
-                    proxyMinSpeed,
-                    proxyMaxSpeed,
-                    proxySpeedDistanceRange
+                    _minSpeed,
+                    _maxSpeedValue,
+                    _range
                 );
 
                 _proxy.position = Vector3.SmoothDamp(
                     _proxy.position,
                     _targetPosition,
                     ref _velocity,
-                    proxySmoothTime,
+                    _smoothTime,
                     _maxSpeed,
                     Time.deltaTime
                 );
@@ -642,6 +703,17 @@ namespace Assets.Scripts.Cameras
 
                 overviewDistanceVelocity = 0f;
             }
+        }
+
+        /// <summary>
+        /// Snap focus zoom to the minimum allowed distance for a new target.
+        /// </summary>
+        private void SetFocusZoomToMinimum(SolarObject _solarObject)
+        {
+            float _baseDistance = GetFocusDistance(_solarObject);
+            float _minMultiplier = Mathf.Max(0f, GetFocusMinMultiplier());
+            float _minDistance = GetFocusMinDistance(_solarObject, _baseDistance, _minMultiplier);
+            focusZoomOffset = _minDistance - _baseDistance;
         }
 
         /// <summary>
@@ -968,7 +1040,29 @@ namespace Assets.Scripts.Cameras
                 float _target = focusDesiredDistance > 0f
                     ? focusDesiredDistance
                     : focusPositionComposer.CameraDistance;
-                UpdateCameraDistance(focusPositionComposer, _target, ref focusDistanceVelocity, 1.0f);
+                float _smoothTime = zoomSmoothTime;
+                float _speedMultiplier = 1.0f;
+                if (focusSwitchTimer > 0f)
+                {
+                    float _duration = Mathf.Max(0.01f, focusSwitchSmoothDuration);
+                    float _blend = Mathf.Clamp01(focusSwitchTimer / _duration);
+                    _smoothTime *= Mathf.Lerp(1.0f, Mathf.Max(1.0f, focusSwitchSmoothTimeMultiplier), _blend);
+                    _speedMultiplier *= Mathf.Lerp(1.0f, Mathf.Clamp01(focusSwitchSpeedMultiplier), _blend);
+                }
+
+                if (IsHighSpeedMode())
+                {
+                    _smoothTime *= HighSpeedZoomSmoothTimeMultiplier;
+                    _speedMultiplier *= HighSpeedZoomSpeedMultiplier;
+                }
+
+                UpdateCameraDistance(
+                    focusPositionComposer,
+                    _target,
+                    ref focusDistanceVelocity,
+                    _speedMultiplier,
+                    _smoothTime
+                );
             }
 
             if (overviewPositionComposer != null)
@@ -976,11 +1070,20 @@ namespace Assets.Scripts.Cameras
                 float _target = overviewDesiredDistance > 0f
                     ? overviewDesiredDistance
                     : overviewPositionComposer.CameraDistance;
+                float _smoothTime = zoomSmoothTime;
+                float _speedMultiplier = GetOverviewZoomSpeedMultiplier();
+                if (IsHighSpeedMode())
+                {
+                    _smoothTime *= HighSpeedZoomSmoothTimeMultiplier;
+                    _speedMultiplier *= HighSpeedZoomSpeedMultiplier;
+                }
+
                 UpdateCameraDistance(
                     overviewPositionComposer,
                     _target,
                     ref overviewDistanceVelocity,
-                    GetOverviewZoomSpeedMultiplier()
+                    _speedMultiplier,
+                    _smoothTime
                 );
             }
         }
@@ -992,10 +1095,11 @@ namespace Assets.Scripts.Cameras
             CinemachinePositionComposer _composer,
             float _target,
             ref float _velocity,
-            float _speedMultiplier
+            float _speedMultiplier,
+            float _smoothTime
         )
         {
-            if (!smoothZoomDistance || zoomSmoothTime <= 0f)
+            if (!smoothZoomDistance || _smoothTime <= 0f)
             {
                 if (!Mathf.Approximately(_composer.CameraDistance, _target))
                 {
@@ -1010,7 +1114,7 @@ namespace Assets.Scripts.Cameras
                 _composer.CameraDistance,
                 _target,
                 ref _velocity,
-                zoomSmoothTime,
+                _smoothTime,
                 GetAdaptiveSpeed(
                     Mathf.Abs(_composer.CameraDistance - _target),
                     zoomMinSpeed * _speedMultiplier,
@@ -1034,6 +1138,19 @@ namespace Assets.Scripts.Cameras
             float _min = Mathf.Max(0f, _minSpeed);
             float _max = Mathf.Max(_min, _maxSpeed);
             return Mathf.Lerp(_min, _max, _t);
+        }
+
+        /// <summary>
+        /// True when the simulation is running at very high time scale.
+        /// </summary>
+        private bool IsHighSpeedMode()
+        {
+            if (simulator == null)
+            {
+                return false;
+            }
+
+            return simulator.TimeScale >= HighSpeedTimeScaleThreshold;
         }
 
         /// <summary>
