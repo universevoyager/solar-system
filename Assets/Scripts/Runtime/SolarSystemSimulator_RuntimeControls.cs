@@ -80,6 +80,20 @@ namespace Assets.Scripts.Runtime
             return _from + (_to - _from) * _t;
         }
 
+        private static float LerpLogOrLinear(float _from, float _to, float _t)
+        {
+            float _clamped = Mathf.Clamp01(_t);
+            if (_from <= 0.0f || _to <= 0.0f)
+            {
+                return Mathf.Lerp(_from, _to, _clamped);
+            }
+
+            float _logFrom = Mathf.Log10(_from);
+            float _logTo = Mathf.Log10(_to);
+            float _logValue = Mathf.Lerp(_logFrom, _logTo, _clamped);
+            return Mathf.Pow(10.0f, _logValue);
+        }
+
         /// <summary>
         /// Initialize runtime UI state and sync toggle defaults.
         /// </summary>
@@ -451,8 +465,16 @@ namespace Assets.Scripts.Runtime
             }
 
             float _realism = RealismLevel01;
-            float _targetIntensity = Mathf.Lerp(sunLightSimulationIntensity, sunLightRealisticIntensity, _realism);
-            float _targetRange = Mathf.Lerp(sunLightSimulationRange, sunLightRealisticRange, _realism);
+            float _targetIntensity = LerpLogOrLinear(
+                sunLightSimulationIntensity,
+                sunLightRealisticIntensity,
+                _realism
+            );
+            float _targetRange = LerpLogOrLinear(
+                sunLightSimulationRange,
+                sunLightRealisticRange,
+                _realism
+            );
             float _targetIndirect = 0.0f;
 
             bool _needsUpdate =

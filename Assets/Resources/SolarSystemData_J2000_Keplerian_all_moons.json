@@ -16,6 +16,7 @@
     {
       "id": "sun",
       "type": "star",
+      "camera_focus_profile": "star",
       "display_name": "Sun",
       "order_from_sun": 0,
       "primary_id": null,
@@ -49,6 +50,7 @@
     {
       "id": "mercury",
       "type": "planet",
+      "camera_focus_profile": "terrestrial",
       "display_name": "Mercury",
       "order_from_sun": 1,
       "primary_id": "sun",
@@ -82,6 +84,7 @@
     {
       "id": "venus",
       "type": "planet",
+      "camera_focus_profile": "terrestrial",
       "display_name": "Venus",
       "order_from_sun": 2,
       "primary_id": "sun",
@@ -115,6 +118,7 @@
     {
       "id": "earth",
       "type": "planet",
+      "camera_focus_profile": "terrestrial",
       "display_name": "Earth",
       "order_from_sun": 3,
       "primary_id": "sun",
@@ -148,6 +152,7 @@
     {
       "id": "moon",
       "type": "moon",
+      "camera_focus_profile": "moon",
       "display_name": "Moon",
       "primary_id": "earth",
       "align_to_primary_tilt": false,
@@ -181,6 +186,7 @@
     {
       "id": "mars",
       "type": "planet",
+      "camera_focus_profile": "terrestrial",
       "display_name": "Mars",
       "order_from_sun": 4,
       "primary_id": "sun",
@@ -214,6 +220,7 @@
     {
       "id": "phobos",
       "type": "moon",
+      "camera_focus_profile": "moon",
       "display_name": "Phobos",
       "primary_id": "mars",
       "align_to_primary_tilt": true,
@@ -247,6 +254,7 @@
     {
       "id": "deimos",
       "type": "moon",
+      "camera_focus_profile": "moon",
       "display_name": "Deimos",
       "primary_id": "mars",
       "align_to_primary_tilt": true,
@@ -280,6 +288,7 @@
     {
       "id": "jupiter",
       "type": "planet",
+      "camera_focus_profile": "gas_giant",
       "display_name": "Jupiter",
       "order_from_sun": 5,
       "primary_id": "sun",
@@ -313,6 +322,7 @@
     {
       "id": "io",
       "type": "moon",
+      "camera_focus_profile": "moon",
       "display_name": "Io",
       "primary_id": "jupiter",
       "align_to_primary_tilt": true,
@@ -346,6 +356,7 @@
     {
       "id": "europa",
       "type": "moon",
+      "camera_focus_profile": "moon",
       "display_name": "Europa",
       "primary_id": "jupiter",
       "align_to_primary_tilt": true,
@@ -379,6 +390,7 @@
     {
       "id": "ganymede",
       "type": "moon",
+      "camera_focus_profile": "moon",
       "display_name": "Ganymede",
       "primary_id": "jupiter",
       "align_to_primary_tilt": true,
@@ -412,6 +424,7 @@
     {
       "id": "callisto",
       "type": "moon",
+      "camera_focus_profile": "moon",
       "display_name": "Callisto",
       "primary_id": "jupiter",
       "align_to_primary_tilt": true,
@@ -445,6 +458,7 @@
     {
       "id": "saturn",
       "type": "planet",
+      "camera_focus_profile": "gas_giant",
       "display_name": "Saturn",
       "order_from_sun": 6,
       "primary_id": "sun",
@@ -478,6 +492,7 @@
     {
       "id": "titan",
       "type": "moon",
+      "camera_focus_profile": "moon",
       "display_name": "Titan",
       "primary_id": "saturn",
       "align_to_primary_tilt": true,
@@ -511,6 +526,7 @@
     {
       "id": "enceladus",
       "type": "moon",
+      "camera_focus_profile": "moon",
       "display_name": "Enceladus",
       "primary_id": "saturn",
       "align_to_primary_tilt": true,
@@ -544,6 +560,7 @@
     {
       "id": "uranus",
       "type": "planet",
+      "camera_focus_profile": "ice_giant",
       "display_name": "Uranus",
       "order_from_sun": 7,
       "primary_id": "sun",
@@ -577,6 +594,7 @@
     {
       "id": "neptune",
       "type": "planet",
+      "camera_focus_profile": "ice_giant",
       "display_name": "Neptune",
       "order_from_sun": 8,
       "primary_id": "sun",
@@ -610,6 +628,7 @@
     {
       "id": "pluto",
       "type": "dwarf_planet",
+      "camera_focus_profile": "dwarf_planet",
       "display_name": "Pluto",
       "order_from_sun": 9,
       "primary_id": "sun",
@@ -643,6 +662,7 @@
     {
       "id": "ceres",
       "type": "dwarf_planet",
+      "camera_focus_profile": "dwarf_planet",
       "display_name": "Ceres",
       "order_from_sun": 5,
       "primary_id": "sun",
@@ -676,6 +696,7 @@
     {
       "id": "eris",
       "type": "dwarf_planet",
+      "camera_focus_profile": "dwarf_planet",
       "display_name": "Eris",
       "order_from_sun": 10,
       "primary_id": "sun",
@@ -709,6 +730,7 @@
     {
       "id": "planet_x",
       "type": "planet",
+      "camera_focus_profile": "ice_giant",
       "display_name": "Planet X",
       "order_from_sun": 11,
       "primary_id": "sun",

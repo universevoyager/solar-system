@@ -264,8 +264,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: '#app version value'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
-  m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
+  m_sharedMaterial: {fileID: -7472326936093592854, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -289,7 +289,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 19.9
+  m_fontSize: 20
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -376,34 +376,34 @@ MonoBehaviour:
   enableRuntimeControls: 1
   realismLevel: 0
   realismStep: 0.05
-  simulationGlobalDistanceMultiplier: 0.02
-  simulationGlobalRadiusMultiplier: 0.25
-  simulationOrbitSegments: 64
-  simulationRuntimeLineWidthScale: 0.25
-  realismOrbitSegmentsOverride: 0
-  realismRuntimeLineWidthScale: 1
-  sunLightNormalIntensity: 30000
-  sunLightNormalRange: 1000
-  sunLightMinimalIntensity: 25
-  sunLightMinimalRange: 1000
+  simulationGlobalDistanceScale: 0.02
+  simulationGlobalRadiusScale: 0.25
+  simulationOrbitLineSegments: 64
+  simulationLineWidthScale: 0.25
+  realismOrbitLineSegmentsOverride: 0
+  realismLineWidthScale: 1
+  sunLightRealisticIntensity: 225000
+  sunLightRealisticRange: 7500
+  sunLightSimulationIntensity: 25
+  sunLightSimulationRange: 1000
   showHypotheticalObjects: 0
   logSpawnedSolarObjectData: 1
-  simulationRadiusScaleAll: 0.8
+  simulationRadiusScaleGlobal: 0.8
   simulationSmallPlanetRadiusScale: 0.625
   simulationLargePlanetRadiusScale: 1
   simulationMoonRadiusScale: 0.4
   simulationDwarfRadiusScale: 0.625
   simulationOtherRadiusScale: 0.8
-  simulationSmallPlanetRadiusKmThreshold: 9000
-  simulationInnerPlanetSpacingBias: 0.15
-  simulationInnerPlanetMaxOrder: 4
-  simulationPlanetDistanceScaleAll: 1
+  simulationSmallPlanetRadiusKmCutoff: 9000
+  simulationInnerPlanetSpacingBiasPerOrder: 0.15
+  simulationInnerPlanetMaxOrderIndex: 4
+  simulationPlanetDistanceScaleGlobal: 1
   simulationOuterPlanetDistanceScale: 2
-  simulationOuterPlanetMinOrder: 5
-  simulationDwarfOuterDistanceAuThreshold: 5
+  simulationOuterPlanetMinOrderIndex: 5
+  simulationDwarfOuterDistanceAuCutoff: 5
   simulationInnerDwarfDistanceScale: 1.45
-  simulationMoonDistanceScale: 0.9
-  alignMoonOrbitsToPrimaryTilt: 1
+  simulationMoonOrbitDistanceScale: 0.9
+  alignMoonOrbitsToPrimaryAxialTilt: 1
 --- !u!4 &117739137
 Transform:
   m_ObjectHideFlags: 0
@@ -705,7 +705,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '#value realism'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -772,7 +772,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &203631739
@@ -1128,8 +1128,8 @@ MonoBehaviour:
 
     For accurate ephemerides, use NASA/JPL Horizons.'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
-  m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
+  m_sharedMaterial: {fileID: -7472326936093592854, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1265,7 +1265,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: +
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -1332,7 +1332,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &248695550
@@ -1353,6 +1353,7 @@ GameObject:
   m_Component:
   - component: {fileID: 272517903}
   - component: {fileID: 272517904}
+  - component: {fileID: 272517905}
   m_Layer: 0
   m_Name: SolarSystemCamera
   m_TagString: Untagged
@@ -1387,54 +1388,88 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0eb7615ec348d4f6fb666d1704de9bb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Cameras.SolarSystemCamera
-  focusVirtualCameraName: Follow-SolarObject-VCinemachine
-  overviewVirtualCameraName: Overview-SolarSystem-VCinemachine
-  focusProxyName: Focus_Proxy
-  overviewProxyName: Overview_Proxy
-  smoothProxyMovement: 1
-  proxySmoothTime: 0.2
-  proxyMaxSpeed: 200
-  proxyMinSpeed: 2
-  proxySpeedDistanceRange: 30
-  smoothZoomDistance: 1
-  zoomSmoothTime: 0.16
-  zoomMaxSpeed: 200
-  zoomMinSpeed: 0.1
-  zoomSpeedDistanceRange: 3
-  focusSwitchSmoothTimeMultiplier: 2
-  focusSwitchSpeedMultiplier: 0.35
-  focusSwitchSmoothDuration: 0.6
-  focusPriority: 20
-  overviewPriority: 10
-  focusDistanceSmall: 0.35
-  focusDistanceMedium: 0.6
-  focusDistanceSun: 1.8
-  focusMediumSizeThreshold: 0.3
-  focusZoomMinMultiplier: 0.15
-  focusZoomMaxMultiplier: 1.5
-  focusZoomMinDistanceSun: 1.5
-  simulationLargeBodyMinDistanceOffset: 0.0765
-  focusLargeBodyZoomInAllowance: 0
-  focusSunZoomInAllowance: 0.5390625
+  positionSmoothSeconds: 0.35
+  rotationSmoothSeconds: 0.3
+  transitionAlignSecondsPerDegree: 0.015
+  transitionAlignMinSeconds: 0.75
+  transitionAlignMaxSeconds: 3
+  transitionAlignMoveFraction: 0.02
+  transitionTravelSecondsPerUnit: 0.07
+  transitionTravelMinSeconds: 0.8
+  transitionTravelMaxSeconds: 5
+  moonZoomRange:
+    MinSimulation: 0.05
+    MaxSimulation: 0.4
+    MinRealistic: 0.2
+    MaxRealistic: 0.4
+  dwarfZoomRange:
+    MinSimulation: 0.06
+    MaxSimulation: 0.45
+    MinRealistic: 0.24
+    MaxRealistic: 0.45
+  terrestrialZoomRange:
+    MinSimulation: 0.05
+    MaxSimulation: 0.55
+    MinRealistic: 0.2
+    MaxRealistic: 0.55
+  gasGiantZoomRange:
+    MinSimulation: 0.234
+    MaxSimulation: 1.8
+    MinRealistic: 0.936
+    MaxRealistic: 1.8
+  iceGiantZoomRange:
+    MinSimulation: 0.13
+    MaxSimulation: 1.35
+    MinRealistic: 0.52
+    MaxRealistic: 1.35
+  starZoomRange:
+    MinSimulation: 1.5
+    MaxSimulation: 3
+    MinRealistic: 2.5
+    MaxRealistic: 3
   focusZoomAbsoluteMinDistance: 0.05
   overviewZoomMinDistance: 2
-  overviewZoomMaxDistance: 40
+  overviewZoomMaxDistance: 120
   overviewDefaultDistance: 5
-  overviewZoomSpeedMultiplier: 5
-  focusZoomStep: 0.015
-  zoomStep: 0.1
-  realisticFocusZoomMinMultiplier: 0.6
+  overviewZoomSpeedScale: 4
+  focusZoomStepSize: 0.01
+  focusZoomStarStepMultiplier: 2
+  overviewZoomStepSize: 0.06
+  focusSelectZoomFraction: 0.15
+  overviewZoomDistanceSpeedStartFraction: 0.4
+  overviewZoomDistanceSpeedMaxMultiplier: 3
+  realisticOverviewZoomDistanceSpeedMaxMultiplier: 8
   realisticOverviewZoomMinDistance: 50
-  realisticOverviewZoomMaxDistance: 1000
-  realisticOverviewZoomSpeedMultiplier: 25
-  orbitStep: 0.1
+  realisticOverviewZoomMaxDistance: 3000
+  realisticOverviewZoomSpeedScale: 20
+  orbitStepSize: 0.06
   focusOrbitMaxOffset: 1
   overviewOrbitMaxOffset: 5
   orbitMaxPitchDegrees: 80
-  orbitRadiusMaxFactor: 0.5
-  orbitStepMaxDegrees: 10
-  overviewOrbitStepDistanceMultiplier: 4
-  overviewOrbitStepBoostDistance: 25
+  orbitRadiusMaxDistanceFactor: 0.5
+  orbitStepMaxDegrees: 6
+  overviewOrbitStepDistanceScale: 3
+  overviewOrbitStepBoostStartDistance: 25
+--- !u!114 &272517905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 272517902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 584485e25275e47d2809d4ded67ac324, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Cameras.SolarObjectSelectionInput
+  sphereCastRadius: 0.2
+  maxRayDistance: 5000
+  selectionLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  ignoreUi: 1
+  focusOnSelect: 1
+  logSelections: 1
 --- !u!1 &283102852
 GameObject:
   m_ObjectHideFlags: 0
@@ -1851,7 +1886,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '#Name'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -1918,7 +1953,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &419358202
@@ -1990,7 +2025,7 @@ MonoBehaviour:
 
     Hold (faster)'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -2057,7 +2092,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &490867892
@@ -2210,8 +2245,8 @@ MonoBehaviour:
   cameraZoomOutButton: {fileID: 241169479}
   planetXToggle: {fileID: 1501160529}
   enableHoldRepeat: 1
-  holdRepeatInitialDelay: 0.35
-  holdRepeatInterval: 0.08
+  holdRepeatInitialDelay: 0.4
+  holdRepeatInterval: 0.1
 --- !u!114 &491049187
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2225,8 +2260,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Guis.Gui_SolarObjectGrid
   gridLayoutGroupName: SolarObjects_View_Interaction_GridLayoutGroup
-  focusButtonTemplateName: Focus_SolarObject_VCinemachine_Button
-  overviewButtonName: View_SolarSystem_Overview_VCinemachine_Button
+  focusButtonTemplateName: Focus_SolarObject_Button
+  overviewButtonName: View_SolarSystem_Overview_Button
   buttonTextChildName: Text
   avatarImageChildName: SolarObjectAvatar
   simulator: {fileID: 117739136}
@@ -2290,7 +2325,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '>'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -2357,7 +2392,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &491131651
@@ -2458,7 +2493,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Show GUI
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -2525,7 +2560,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &535228784
@@ -2595,7 +2630,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '-'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -2662,7 +2697,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &539736149
@@ -2854,7 +2889,7 @@ GameObject:
   - component: {fileID: 579810452}
   - component: {fileID: 579810451}
   m_Layer: 5
-  m_Name: Focus_SolarObject_VCinemachine_Button
+  m_Name: Focus_SolarObject_Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3069,7 +3104,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '-'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -3136,7 +3171,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &649827364
@@ -3206,7 +3241,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: View Full Solar
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -3273,7 +3308,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &678165265
@@ -3625,7 +3660,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Show PlanetX
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -3692,7 +3727,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &790655658
@@ -3762,7 +3797,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Show World Up
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -3829,7 +3864,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &879673265
@@ -3985,8 +4020,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Open source project - https://github.com/marinsplaylab-org/solar-system
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
-  m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
+  m_sharedMaterial: {fileID: -7472326936093592854, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4010,7 +4045,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 19.9
+  m_fontSize: 20
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -4272,7 +4307,6 @@ GameObject:
   - component: {fileID: 961739752}
   - component: {fileID: 961739751}
   - component: {fileID: 961739750}
-  - component: {fileID: 961739754}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -4398,38 +4432,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 15, y: 180, z: 0}
---- !u!114 &961739754
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 961739749}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 72ece51f2901e7445ab60da3685d6b5f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineBrain
-  ShowDebugText: 0
-  ShowCameraFrustum: 1
-  IgnoreTimeScale: 0
-  WorldUpOverride: {fileID: 0}
-  ChannelMask: -1
-  UpdateMethod: 2
-  BlendUpdateMethod: 1
-  LensModeOverride:
-    Enabled: 0
-    DefaultMode: 2
-  DefaultBlend:
-    Style: 1
-    Time: 2
-    CustomCurve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-  CustomBlends: {fileID: 0}
 --- !u!1 &999357172
 GameObject:
   m_ObjectHideFlags: 0
@@ -4920,7 +4922,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: <
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -4987,7 +4989,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1183959203
@@ -5057,7 +5059,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '-'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -5124,7 +5126,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1190492066
@@ -5194,7 +5196,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '#value timescale'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -5261,7 +5263,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1369751882
@@ -5810,7 +5812,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: +
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -5877,7 +5879,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1570938623
@@ -6085,143 +6087,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1629420980}
   m_CullTransparentMesh: 1
---- !u!1 &1646202230
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1646202232}
-  - component: {fileID: 1646202231}
-  - component: {fileID: 1646202234}
-  - component: {fileID: 1646202233}
-  m_Layer: 0
-  m_Name: Follow-SolarObject-VCinemachine
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1646202231
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1646202230}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
-  Priority:
-    Enabled: 1
-    m_Value: 20
-  OutputChannel: 1
-  StandbyUpdate: 2
-  m_StreamingVersion: 20241001
-  m_LegacyPriority: 0
-  Target:
-    TrackingTarget: {fileID: 2121144000}
-    LookAtTarget: {fileID: 0}
-    CustomLookAtTarget: 0
-  Lens:
-    FieldOfView: 60.000004
-    OrthographicSize: 5
-    NearClipPlane: 0.01
-    FarClipPlane: 10000
-    Dutch: 0
-    ModeOverride: 0
-    PhysicalProperties:
-      GateFit: 1
-      SensorSize: {x: 36, y: 24}
-      LensShift: {x: 0, y: 0}
-      FocusDistance: 10
-      Iso: 200
-      ShutterSpeed: 0.005
-      Aperture: 16
-      BladeCount: 5
-      Curvature: {x: 2, y: 11}
-      BarrelClipping: 0.25
-      Anamorphism: 0
-  BlendHint: 0
---- !u!4 &1646202232
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1646202230}
-  serializedVersion: 2
-  m_LocalRotation: {x: -3.319133e-10, y: 0.9997699, z: -0.02144996, w: -0.000000015470285}
-  m_LocalPosition: {x: 0.00000030919207, y: 0.42890054, z: 9.990798}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1646202233
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1646202230}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f38bda98361e1de48a4ca2bd86ea3c17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineRotationComposer
-  Composition:
-    ScreenPosition: {x: 0, y: 0}
-    DeadZone:
-      Enabled: 0
-      Size: {x: 0.2, y: 0.2}
-    HardLimits:
-      Enabled: 0
-      Size: {x: 0.8, y: 0.8}
-      Offset: {x: 0, y: 0}
-  CenterOnActivate: 1
-  TargetOffset: {x: 0, y: 0, z: 0}
-  Damping: {x: 0.5, y: 0.5}
-  Lookahead:
-    Enabled: 0
-    Time: 0
-    Smoothing: 0
-    IgnoreY: 0
---- !u!114 &1646202234
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1646202230}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 886251e9a18ece04ea8e61686c173e1b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachinePositionComposer
-  CameraDistance: 10
-  DeadZoneDepth: 0
-  Composition:
-    ScreenPosition: {x: 0, y: 0}
-    DeadZone:
-      Enabled: 0
-      Size: {x: 0.2, y: 0.2}
-    HardLimits:
-      Enabled: 0
-      Size: {x: 0.8, y: 0.8}
-      Offset: {x: 0, y: 0}
-  CenterOnActivate: 1
-  TargetOffset: {x: 0, y: 0, z: 0}
-  Damping: {x: 1, y: 1, z: 1}
-  Lookahead:
-    Enabled: 0
-    Time: 0
-    Smoothing: 0
-    IgnoreY: 0
 --- !u!1 &1651444771
 GameObject:
   m_ObjectHideFlags: 0
@@ -6281,7 +6146,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Show Spin Axis
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -6348,7 +6213,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1651444774
@@ -6418,7 +6283,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: <
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -6485,7 +6350,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1657450518
@@ -6586,7 +6451,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Show Orbits
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -6653,7 +6518,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1667916425
@@ -6844,7 +6709,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Hide GUI
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -6911,7 +6776,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1732701571
@@ -6981,7 +6846,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: +
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -7048,7 +6913,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1747075981
@@ -7118,7 +6983,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Show Spin Direction
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -7185,7 +7050,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1747086341
@@ -7209,7 +7074,7 @@ GameObject:
   - component: {fileID: 1758063491}
   - component: {fileID: 1758063490}
   m_Layer: 5
-  m_Name: View_SolarSystem_Overview_VCinemachine_Button
+  m_Name: View_SolarSystem_Overview_Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7462,7 +7327,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '>'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -7529,7 +7394,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1850891972
@@ -7871,8 +7736,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Start Simulation
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
-  m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
+  m_sharedMaterial: {fileID: -7472326936093592854, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -7998,143 +7863,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1962756360}
   m_CullTransparentMesh: 1
---- !u!1 &1976119784
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1976119786}
-  - component: {fileID: 1976119785}
-  - component: {fileID: 1976119788}
-  - component: {fileID: 1976119787}
-  m_Layer: 0
-  m_Name: Overview-SolarSystem-VCinemachine
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1976119785
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1976119784}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
-  Priority:
-    Enabled: 1
-    m_Value: 10
-  OutputChannel: 1
-  StandbyUpdate: 2
-  m_StreamingVersion: 20241001
-  m_LegacyPriority: 0
-  Target:
-    TrackingTarget: {fileID: 1663154264}
-    LookAtTarget: {fileID: 0}
-    CustomLookAtTarget: 0
-  Lens:
-    FieldOfView: 60.000004
-    OrthographicSize: 5
-    NearClipPlane: 0.01
-    FarClipPlane: 10000
-    Dutch: 0
-    ModeOverride: 0
-    PhysicalProperties:
-      GateFit: 1
-      SensorSize: {x: 36, y: 24}
-      LensShift: {x: 0, y: 0}
-      FocusDistance: 10
-      Iso: 200
-      ShutterSpeed: 0.005
-      Aperture: 16
-      BladeCount: 5
-      Curvature: {x: 2, y: 11}
-      BarrelClipping: 0.25
-      Anamorphism: 0
-  BlendHint: 0
---- !u!4 &1976119786
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1976119784}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.000000005912419, y: 0.9260168, z: -0.3774824, w: -0.000000014503988}
-  m_LocalPosition: {x: 0.00000022398197, y: 6.9911, z: 7.1501393}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1976119787
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1976119784}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f38bda98361e1de48a4ca2bd86ea3c17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineRotationComposer
-  Composition:
-    ScreenPosition: {x: 0, y: 0}
-    DeadZone:
-      Enabled: 0
-      Size: {x: 0.2, y: 0.2}
-    HardLimits:
-      Enabled: 0
-      Size: {x: 0.8, y: 0.8}
-      Offset: {x: 0, y: 0}
-  CenterOnActivate: 1
-  TargetOffset: {x: 0, y: 0, z: 0}
-  Damping: {x: 0.5, y: 0.5}
-  Lookahead:
-    Enabled: 0
-    Time: 0
-    Smoothing: 0
-    IgnoreY: 0
---- !u!114 &1976119788
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1976119784}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 886251e9a18ece04ea8e61686c173e1b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachinePositionComposer
-  CameraDistance: 10
-  DeadZoneDepth: 0
-  Composition:
-    ScreenPosition: {x: 0, y: 0}
-    DeadZone:
-      Enabled: 0
-      Size: {x: 0.2, y: 0.2}
-    HardLimits:
-      Enabled: 0
-      Size: {x: 0.8, y: 0.8}
-      Offset: {x: 0, y: 0}
-  CenterOnActivate: 1
-  TargetOffset: {x: 0, y: 0, z: 0}
-  Damping: {x: 1, y: 1, z: 1}
-  Lookahead:
-    Enabled: 0
-    Time: 0
-    Smoothing: 0
-    IgnoreY: 0
 --- !u!1 &1996276945
 GameObject:
   m_ObjectHideFlags: 0
@@ -8198,8 +7926,8 @@ MonoBehaviour:
     and should not be used for scientific analysis, navigation, or ephemeris-grade
     accuracy'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
-  m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
+  m_sharedMaterial: {fileID: -7472326936093592854, guid: fd0cd1e91675f43eea51ef2b7884de3a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -8223,7 +7951,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 19.9
+  m_fontSize: 20
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -8333,7 +8061,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Solar System
+  m_text: Solar System Simulation
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
   m_sharedMaterial: {fileID: -1104732058339364869, guid: 20b4c34c0d6e0430fb2ca860b40f0626, type: 2}
@@ -8952,8 +8680,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 961739753}
-  - {fileID: 1646202232}
-  - {fileID: 1976119786}
   - {fileID: 2121144000}
   - {fileID: 1663154264}
   - {fileID: 505039039}

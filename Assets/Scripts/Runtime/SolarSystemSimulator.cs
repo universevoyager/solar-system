@@ -58,17 +58,17 @@ namespace Assets.Scripts.Runtime
         [SerializeField] private float realismLineWidthScale = 1.0f;
 
         [Header("Sun Light Presets")]
-        [Tooltip("Sun point light intensity at realism = 1. Higher = brighter sun. Example: 30000")]
-        [Range(0f, 100000f)]
-        [SerializeField] private float sunLightRealisticIntensity = 300000.0f;
-        [Tooltip("Sun point light range at realism = 1. Higher = light reaches farther. Example: 1000")]
-        [Range(0f, 5000f)]
-        [SerializeField] private float sunLightRealisticRange = 10000.0f;
+        [Tooltip("Sun point light intensity at realism = 1. Higher = brighter sun. Example: 225000")]
+        [Range(0f, 500000f)]
+        [SerializeField] private float sunLightRealisticIntensity = 225000.0f;
+        [Tooltip("Sun point light range at realism = 1. Higher = light reaches farther. Example: 7500")]
+        [Range(0f, 20000f)]
+        [SerializeField] private float sunLightRealisticRange = 7500.0f;
         [Tooltip("Sun point light intensity at realism = 0. Higher = brighter sun. Example: 25")]
-        [Range(0f, 100000f)]
+        [Range(0f, 500000f)]
         [SerializeField] private float sunLightSimulationIntensity = 25.0f;
         [Tooltip("Sun point light range at realism = 0. Higher = light reaches farther. Example: 1000")]
-        [Range(0f, 5000f)]
+        [Range(0f, 20000f)]
         [SerializeField] private float sunLightSimulationRange = 1000.0f;
 
         [Header("Hypothetical Objects")]

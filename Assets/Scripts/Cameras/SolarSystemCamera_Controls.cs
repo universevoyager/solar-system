@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using Assets.Scripts.Helpers.Debugging;
 using Assets.Scripts.Runtime;
 using UnityEngine;
@@ -18,61 +19,41 @@ namespace Assets.Scripts.Cameras
                 return;
             }
 
-            bool _useFocus = IsFocusActive();
-            Transform? _target = _useFocus ? focusTarget : overviewTarget;
-            Transform? _proxy = _useFocus ? focusProxy : overviewProxy;
-            if (_target == null || _proxy == null)
+            EnsureInitializedForRuntime();
+            if (mainCamera == null)
             {
-                HelpLogs.Warn("Camera", "Orbit request ignored because target or proxy is missing.");
                 return;
+            }
+
+            CancelTransition();
+
+            bool _useFocus = currentMode == CameraMode.Focus;
+            Transform? _target = _useFocus ? focusTarget : overviewTarget;
+            if (_target == null)
+            {
+                HelpLogs.Warn("Camera", "Orbit request ignored because target is missing.");
+                return;
+            }
+
+            float _distance = _useFocus ? GetFocusDistanceForCurrentTarget() : GetOverviewDistance();
+            float _radius = GetOrbitRadiusFromDistance(_distance, _useFocus ? focusOrbitMaxOffset : overviewOrbitMaxOffset);
+            float _step = GetOrbitStepDegrees(_radius);
+            if (!_useFocus)
+            {
+                _step *= GetOverviewOrbitStepMultiplier(_distance);
             }
 
             if (_useFocus)
             {
-                float _cameraDistance = GetFocusCameraDistance();
-                float _radius = GetOrbitRadiusFromDistance(_cameraDistance, focusOrbitMaxOffset);
-                EnsureOrbitInitialized(
-                    _target,
-                    _radius,
-                    ref focusOrbitYaw,
-                    ref focusOrbitPitch,
-                    ref focusOrbitOffset,
-                    ref focusOrbitInitialized
-                );
-                float _step = GetOrbitStepDegrees(_radius);
-                focusOrbitYaw = WrapAngle(focusOrbitYaw + _direction.x * _step);
-                focusOrbitPitch = Mathf.Clamp(
-                    focusOrbitPitch + _direction.y * _step,
-                    -orbitMaxPitchDegrees,
-                    orbitMaxPitchDegrees
-                );
-                focusOrbitOffset = GetOrbitOffset(_radius, focusOrbitYaw, focusOrbitPitch);
-                if (focusSolarObject != null)
-                {
-                    ApplyFocusDistance(focusSolarObject);
-                }
+                focusYaw = WrapAngle(focusYaw + _direction.x * _step);
+                focusPitch = Mathf.Clamp(focusPitch + _direction.y * _step, -orbitMaxPitchDegrees, orbitMaxPitchDegrees);
+                focusOrbitInitialized = true;
             }
             else
             {
-                float _cameraDistance = GetOverviewCameraDistance();
-                float _radius = GetOrbitRadiusFromDistance(_cameraDistance, overviewOrbitMaxOffset);
-                EnsureOrbitInitialized(
-                    _target,
-                    _radius,
-                    ref overviewOrbitYaw,
-                    ref overviewOrbitPitch,
-                    ref overviewOrbitOffset,
-                    ref overviewOrbitInitialized
-                );
-                float _step = GetOrbitStepDegrees(_radius);
-                _step *= GetOverviewOrbitStepMultiplier(_cameraDistance);
-                overviewOrbitYaw = WrapAngle(overviewOrbitYaw + _direction.x * _step);
-                overviewOrbitPitch = Mathf.Clamp(
-                    overviewOrbitPitch + _direction.y * _step,
-                    -orbitMaxPitchDegrees,
-                    orbitMaxPitchDegrees
-                );
-                overviewOrbitOffset = GetOrbitOffset(_radius, overviewOrbitYaw, overviewOrbitPitch);
+                overviewYaw = WrapAngle(overviewYaw + _direction.x * _step);
+                overviewPitch = Mathf.Clamp(overviewPitch + _direction.y * _step, -orbitMaxPitchDegrees, orbitMaxPitchDegrees);
+                overviewOrbitInitialized = true;
             }
         }
 
@@ -86,8 +67,15 @@ namespace Assets.Scripts.Cameras
                 return;
             }
 
-            bool _useFocus = IsFocusActive();
-            if (_useFocus)
+            EnsureInitializedForRuntime();
+            if (mainCamera == null)
+            {
+                return;
+            }
+
+            CancelTransition();
+
+            if (currentMode == CameraMode.Focus)
             {
                 if (focusSolarObject == null)
                 {
@@ -95,16 +83,50 @@ namespace Assets.Scripts.Cameras
                     return;
                 }
 
-                focusZoomOffset += _delta * focusZoomStepSize;
-                ApplyFocusDistance(focusSolarObject);
-                RefreshFocusOrbitOffset();
+                AdjustFocusZoomNormalized(_delta);
             }
             else
             {
-                overviewZoomOffset += _delta * overviewZoomStepSize * GetOverviewZoomSpeedMultiplier();
-                ApplyOverviewDistance();
-                RefreshOverviewOrbitOffset();
+                AdjustOverviewZoomNormalized(_delta);
             }
+        }
+
+        /// <summary>
+        /// Adjust focus zoom using normalized steps.
+        /// </summary>
+        private void AdjustFocusZoomNormalized(int _delta)
+        {
+            if (focusSolarObject == null)
+            {
+                return;
+            }
+
+            GetFocusZoomRange(focusSolarObject, out float _minDistance, out float _maxDistance);
+            float _range = Mathf.Max(0.0001f, _maxDistance - _minDistance);
+            float _step = focusZoomStepSize / _range;
+            if (focusSolarObject.IsStar ||
+                string.Equals(focusSolarObject.Id, "sun", StringComparison.OrdinalIgnoreCase))
+            {
+                _step *= Mathf.Max(0.1f, focusZoomStarStepMultiplier);
+            }
+
+            focusZoomNormalized = Mathf.Clamp01(focusZoomNormalized + _delta * _step);
+            ApplyFocusDistance(focusSolarObject);
+        }
+
+        /// <summary>
+        /// Adjust overview zoom using normalized steps.
+        /// </summary>
+        private void AdjustOverviewZoomNormalized(int _delta)
+        {
+            GetOverviewZoomRange(out float _minDistance, out float _maxDistance);
+            float _range = Mathf.Max(0.0001f, _maxDistance - _minDistance);
+            float _normalized = Mathf.Clamp01(overviewZoomNormalized);
+            float _distance = Mathf.Lerp(_minDistance, _maxDistance, _normalized);
+            float _step = (overviewZoomStepSize * GetOverviewZoomSpeedMultiplier(_distance)) / _range;
+
+            overviewZoomNormalized = Mathf.Clamp01(_normalized + _delta * _step);
+            ApplyOverviewDistance();
         }
 
         /// <summary>
@@ -141,32 +163,6 @@ namespace Assets.Scripts.Cameras
         }
 
         /// <summary>
-        /// Initialize orbit offsets from the current camera view if needed.
-        /// </summary>
-        private void EnsureOrbitInitialized(
-            Transform _target,
-            float _radius,
-            ref float _yaw,
-            ref float _pitch,
-            ref Vector3 _offset,
-            ref bool _initialized
-        )
-        {
-            if (_initialized)
-            {
-                return;
-            }
-
-            if (!TrySyncOrbitToCameraView(_target, _radius, ref _yaw, ref _pitch, ref _offset, ref _initialized))
-            {
-                _yaw = 0f;
-                _pitch = 0f;
-                _offset = GetOrbitOffset(_radius, _yaw, _pitch);
-                _initialized = true;
-            }
-        }
-
-        /// <summary>
         /// Sync orbit yaw/pitch to the current camera direction.
         /// </summary>
         private void SyncOrbitToCameraView(
@@ -174,33 +170,34 @@ namespace Assets.Scripts.Cameras
             float _radius,
             ref float _yaw,
             ref float _pitch,
-            ref Vector3 _offset,
-            ref bool _initialized
-        )
-        {
-            TrySyncOrbitToCameraView(_target, _radius, ref _yaw, ref _pitch, ref _offset, ref _initialized);
-        }
-
-        /// <summary>
-        /// Try to sync orbit yaw/pitch to the current camera direction.
-        /// </summary>
-        private bool TrySyncOrbitToCameraView(
-            Transform _target,
-            float _radius,
-            ref float _yaw,
-            ref float _pitch,
-            ref Vector3 _offset,
             ref bool _initialized
         )
         {
             if (!TryGetCameraDirection(_target, out Vector3 _direction))
             {
-                return false;
+                return;
             }
 
-            SetOrbitFromDirection(_direction, _radius, ref _yaw, ref _pitch, ref _offset);
+            SetOrbitFromDirection(_direction, _radius, ref _yaw, ref _pitch);
             _initialized = true;
-            return true;
+        }
+
+        /// <summary>
+        /// Convert a direction vector into yaw/pitch orbit values.
+        /// </summary>
+        private void SetOrbitFromDirection(Vector3 _direction, float _radius, ref float _yaw, ref float _pitch)
+        {
+            if (_direction.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            Vector3 _forward = -_direction.normalized;
+            float _yawRad = Mathf.Atan2(_forward.x, _forward.z);
+            float _pitchRad = -Mathf.Asin(Mathf.Clamp(_forward.y, -1f, 1f));
+
+            _yaw = WrapAngle(Mathf.Rad2Deg * _yawRad);
+            _pitch = Mathf.Clamp(Mathf.Rad2Deg * _pitchRad, -orbitMaxPitchDegrees, orbitMaxPitchDegrees);
         }
 
         /// <summary>
@@ -222,13 +219,12 @@ namespace Assets.Scripts.Cameras
         private bool TryGetCameraDirection(Transform _target, out Vector3 _direction)
         {
             _direction = Vector3.zero;
-            Camera _camera = Camera.main;
-            if (_camera == null)
+            if (mainCamera == null)
             {
                 return false;
             }
 
-            _direction = _camera.transform.position - _target.position;
+            _direction = mainCamera.transform.position - _target.position;
             if (_direction.sqrMagnitude <= 0.0001f)
             {
                 return false;
@@ -236,130 +232,6 @@ namespace Assets.Scripts.Cameras
 
             _direction.Normalize();
             return true;
-        }
-
-        /// <summary>
-        /// Recompute orbit offsets when camera distance changes.
-        /// </summary>
-        private void UpdateOrbitOffsetsForDistances()
-        {
-            if (focusOrbitInitialized && focusTarget != null)
-            {
-                float _radius = GetOrbitRadiusFromDistance(GetFocusCameraDistance(), focusOrbitMaxOffset);
-                focusOrbitOffset = GetOrbitOffset(_radius, focusOrbitYaw, focusOrbitPitch);
-            }
-
-            if (overviewOrbitInitialized && overviewTarget != null)
-            {
-                float _radius = GetOrbitRadiusFromDistance(GetOverviewCameraDistance(), overviewOrbitMaxOffset);
-                overviewOrbitOffset = GetOrbitOffset(_radius, overviewOrbitYaw, overviewOrbitPitch);
-            }
-        }
-
-        /// <summary>
-        /// Convert a direction vector into yaw/pitch orbit values.
-        /// </summary>
-        private void SetOrbitFromDirection(
-            Vector3 _direction,
-            float _radius,
-            ref float _yaw,
-            ref float _pitch,
-            ref Vector3 _offset
-        )
-        {
-            Vector3 _forward = -_direction;
-            float _yawRad = Mathf.Atan2(_forward.x, _forward.z);
-            float _pitchRad = -Mathf.Asin(Mathf.Clamp(_forward.y, -1f, 1f));
-
-            _yaw = WrapAngle(Mathf.Rad2Deg * _yawRad);
-            _pitch = Mathf.Clamp(Mathf.Rad2Deg * _pitchRad, -orbitMaxPitchDegrees, orbitMaxPitchDegrees);
-            _offset = GetOrbitOffset(_radius, _yaw, _pitch);
-        }
-
-        /// <summary>
-        /// Sync focus zoom offset from the current camera distance.
-        /// </summary>
-        private void SyncFocusZoomFromCurrentView(SolarObject _solarObject)
-        {
-            float _currentDistance = GetFocusCameraDistance();
-            float _baseDistance = GetFocusDistance(_solarObject);
-            focusZoomOffset = _currentDistance - _baseDistance;
-        }
-
-        /// <summary>
-        /// Compute the focus orbit radius from camera distance.
-        /// </summary>
-        private float GetFocusOrbitRadius()
-        {
-            float _cameraDistance = GetFocusCameraDistance();
-            return GetOrbitRadiusFromDistance(_cameraDistance, focusOrbitMaxOffset);
-        }
-
-        /// <summary>
-        /// Compute the overview orbit radius from camera distance.
-        /// </summary>
-        private float GetOverviewOrbitRadius()
-        {
-            float _cameraDistance = GetOverviewCameraDistance();
-            return GetOrbitRadiusFromDistance(_cameraDistance, overviewOrbitMaxOffset);
-        }
-
-        /// <summary>
-        /// Convert camera distance to an orbit radius with a max cap.
-        /// </summary>
-        private float GetOrbitRadiusFromDistance(float _cameraDistance, float _maxOffset)
-        {
-            float _factor = Mathf.Clamp01(orbitRadiusMaxDistanceFactor);
-            float _radius = _cameraDistance * _factor;
-            _radius = Mathf.Min(_radius, _maxOffset);
-            return Mathf.Max(0f, _radius);
-        }
-
-        /// <summary>
-        /// Refresh the focus orbit offset after zoom changes.
-        /// </summary>
-        private void RefreshFocusOrbitOffset()
-        {
-            if (!focusOrbitInitialized)
-            {
-                return;
-            }
-
-            if (focusTarget == null || focusProxy == null)
-            {
-                return;
-            }
-
-            float _radius = GetFocusOrbitRadius();
-            focusOrbitOffset = GetOrbitOffset(_radius, focusOrbitYaw, focusOrbitPitch);
-        }
-
-        /// <summary>
-        /// Refresh the overview orbit offset after zoom changes.
-        /// </summary>
-        private void RefreshOverviewOrbitOffset()
-        {
-            if (!overviewOrbitInitialized)
-            {
-                return;
-            }
-
-            if (overviewTarget == null || overviewProxy == null)
-            {
-                return;
-            }
-
-            float _radius = GetOverviewOrbitRadius();
-            overviewOrbitOffset = GetOrbitOffset(_radius, overviewOrbitYaw, overviewOrbitPitch);
-        }
-
-        /// <summary>
-        /// Convert yaw/pitch orbit values into a local offset.
-        /// </summary>
-        private Vector3 GetOrbitOffset(float _radius, float _yawDegrees, float _pitchDegrees)
-        {
-            Quaternion _rotation = Quaternion.Euler(_pitchDegrees, _yawDegrees, 0f);
-            return _rotation * Vector3.back * _radius;
         }
         #endregion
     }

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using Assets.Scripts.Helpers.Debugging;
 using Assets.Scripts.Runtime;
-using Unity.Cinemachine;
 using UnityEngine;
 
 namespace Assets.Scripts.Cameras
@@ -27,60 +26,38 @@ namespace Assets.Scripts.Cameras
                 return;
             }
 
-            if (focusVirtualCamera == null)
+            mainCamera = Camera.main;
+            if (mainCamera == null)
             {
-                focusVirtualCamera = FindVirtualCameraByName(focusVirtualCameraName);
-            }
-
-            if (overviewVirtualCamera == null)
-            {
-                overviewVirtualCamera = FindVirtualCameraByName(overviewVirtualCameraName);
-            }
-
-            if (focusVirtualCamera != null)
-            {
-                focusPositionComposer = focusVirtualCamera.GetComponent<CinemachinePositionComposer>();
-                if (focusPositionComposer == null)
-                {
-                    HelpLogs.Warn("Camera", "Focus camera missing CinemachinePositionComposer.");
-                }
-                else
-                {
-                    focusDesiredDistance = focusPositionComposer.CameraDistance;
-                }
-            }
-
-            if (overviewVirtualCamera != null)
-            {
-                overviewPositionComposer = overviewVirtualCamera.GetComponent<CinemachinePositionComposer>();
-                if (overviewPositionComposer == null)
-                {
-                    HelpLogs.Warn("Camera", "Overview camera missing CinemachinePositionComposer.");
-                }
-                else
-                {
-                    overviewBaseDistance = overviewDefaultDistance;
-                    overviewPositionComposer.CameraDistance = overviewDefaultDistance;
-                    overviewDesiredDistance = overviewPositionComposer.CameraDistance;
-                }
-            }
-
-            EnsureProxies();
-
-            if (overviewTarget == null)
-            {
-                EnsureOverviewTarget();
-            }
-
-            if (focusVirtualCamera == null && overviewVirtualCamera == null)
-            {
-                HelpLogs.Warn("Camera", "No Cinemachine virtual cameras found or one is not active.");
+                HelpLogs.Warn("Camera", "No camera found for SolarSystemCamera.");
                 return;
             }
 
-            ApplyOverviewCameraTargets();
+            if (simulator == null)
+            {
+                simulator = FindFirstObjectByType<SolarSystemSimulator>();
+                if (simulator == null)
+                {
+                    HelpLogs.Warn("Camera", "SolarSystemSimulator not found.");
+                }
+            }
 
-            ShowOverview();
+            EnsureOverviewTarget();
+            currentMode = CameraMode.Overview;
+
+            if (overviewTarget != null)
+            {
+                SyncOverviewZoomNormalizedFromDistance(overviewDefaultDistance);
+                SyncOrbitToCameraView(
+                    overviewTarget,
+                    GetOverviewOrbitRadius(GetOverviewDistance()),
+                    ref overviewYaw,
+                    ref overviewPitch,
+                    ref overviewOrbitInitialized
+                );
+            }
+
+            SnapToCurrentMode();
             isInitialized = true;
         }
 
@@ -95,9 +72,9 @@ namespace Assets.Scripts.Cameras
                 return;
             }
 
-            if (focusVirtualCamera == null)
+            EnsureInitializedForRuntime();
+            if (mainCamera == null)
             {
-                HelpLogs.Warn("Camera", "Focus virtual camera not found.");
                 return;
             }
 
@@ -137,42 +114,29 @@ namespace Assets.Scripts.Cameras
             }
 
             bool _isNewTarget = focusSolarObject == null || focusSolarObject != _solarObject;
-            focusTarget = _solarObject.transform;
             focusSolarObject = _solarObject;
+            focusTarget = _solarObject.transform;
+            currentMode = CameraMode.Focus;
 
             if (_isNewTarget)
             {
-                bool _focusActive = IsFocusActive();
-                SetFocusZoomToMinimum(_solarObject);
-
-                focusProxyVelocity = Vector3.zero;
-                focusDistanceVelocity = 0f;
-                focusSwitchTimer = Mathf.Max(0f, focusSwitchSmoothSeconds);
-
-                if (_focusActive || !focusOrbitInitialized)
-                {
-                    SyncOrbitToCameraView(
-                        focusTarget,
-                        GetFocusOrbitRadius(),
-                        ref focusOrbitYaw,
-                        ref focusOrbitPitch,
-                        ref focusOrbitOffset,
-                        ref focusOrbitInitialized
-                    );
-                }
+                SetFocusZoomForSelection();
             }
 
             ApplyFocusDistance(_solarObject);
-            RefreshFocusOrbitOffset();
 
-            ApplyFocusCameraTargets();
-
-            if (_isNewTarget)
+            if (_isNewTarget || !focusOrbitInitialized)
             {
-                ResetCameraState(focusVirtualCamera);
+                SyncOrbitToCameraView(
+                    focusTarget,
+                    GetFocusOrbitRadius(GetFocusDistanceForCurrentTarget()),
+                    ref focusYaw,
+                    ref focusPitch,
+                    ref focusOrbitInitialized
+                );
             }
 
-            SetCameraPriority(focusVirtualCamera, overviewVirtualCamera);
+            BeginTransition(CameraMode.Focus);
         }
 
         /// <summary>
@@ -180,42 +144,35 @@ namespace Assets.Scripts.Cameras
         /// </summary>
         public void ShowOverview()
         {
-            if (overviewVirtualCamera == null)
+            EnsureInitializedForRuntime();
+            if (mainCamera == null)
             {
-                HelpLogs.Warn("Camera", "Overview virtual camera not found.");
                 return;
             }
 
-            bool _wasFocusActive = IsFocusActive();
-
-            if (overviewTarget != null)
+            EnsureOverviewTarget();
+            if (overviewTarget == null)
             {
-                // No immediate proxy update; handled in LateUpdate for smoothing.
-            }
-            else
-            {
-                EnsureOverviewTarget();
+                HelpLogs.Warn("Camera", "Overview target not found.");
+                return;
             }
 
-            ApplyOverviewCameraTargets();
+            currentMode = CameraMode.Overview;
+
             ApplyOverviewDistance();
-            if (overviewTarget != null && (_wasFocusActive || !overviewOrbitInitialized))
+
+            if (!overviewOrbitInitialized)
             {
                 SyncOrbitToCameraView(
                     overviewTarget,
-                    GetOverviewOrbitRadius(),
-                    ref overviewOrbitYaw,
-                    ref overviewOrbitPitch,
-                    ref overviewOrbitOffset,
+                    GetOverviewOrbitRadius(GetOverviewDistance()),
+                    ref overviewYaw,
+                    ref overviewPitch,
                     ref overviewOrbitInitialized
                 );
             }
 
-            overviewProxyVelocity = Vector3.zero;
-            overviewDistanceVelocity = 0f;
-
-            ResetCameraState(overviewVirtualCamera);
-            SetCameraPriority(overviewVirtualCamera, focusVirtualCamera);
+            BeginTransition(CameraMode.Overview);
         }
 
         /// <summary>
@@ -230,7 +187,6 @@ namespace Assets.Scripts.Cameras
             }
 
             overviewTarget = _target;
-            ApplyOverviewCameraTargets();
         }
         #endregion
     }

@@ -19,10 +19,10 @@ namespace Assets.Scripts.Guis
         [Header("Scene Names")]
         [Tooltip("Grid Layout Group object name. Example: SolarObjects_View_Interaction_GridLayoutGroup")]
         [SerializeField] private string gridLayoutGroupName = "SolarObjects_View_Interaction_GridLayoutGroup";
-        [Tooltip("Focus button template object name. Example: Focus_SolarObject_VCinemachine_Button")]
-        [SerializeField] private string focusButtonTemplateName = "Focus_SolarObject_VCinemachine_Button";
-        [Tooltip("Overview button object name. Example: View_SolarSystem_Overview_VCinemachine_Button")]
-        [SerializeField] private string overviewButtonName = "View_SolarSystem_Overview_VCinemachine_Button";
+        [Tooltip("Focus button template object name. Example: Focus_SolarObject_Button")]
+        [SerializeField] private string focusButtonTemplateName = "Focus_SolarObject_Button";
+        [Tooltip("Overview button object name. Example: View_SolarSystem_Overview_Button")]
+        [SerializeField] private string overviewButtonName = "View_SolarSystem_Overview_Button";
         [Tooltip("Child text object name under each button. Example: Text")]
         [SerializeField] private string buttonTextChildName = "Text";
         [Tooltip("Child image object name for avatars. Example: SolarObjectAvatar")]

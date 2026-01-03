@@ -22,11 +22,31 @@ namespace Assets.Scripts.Runtime
             bool _drawWorldUp = showWorldUpLinesLocal && visualContext.ShowWorldUpLines;
             bool _drawSpinDirection = showSpinDirectionLinesLocal && visualContext.ShowSpinDirectionLines;
 
-            bool _axisScaleChanged = UpdateAxisLineDistanceScale();
-            bool _orbitScaleChanged = UpdateOrbitLineDistanceScale();
-            if (_axisScaleChanged || _orbitScaleChanged)
+            if (!_drawOrbit && !_drawSpinAxis && !_drawWorldUp && !_drawSpinDirection)
             {
-                lineStylesDirty = true;
+                if (orbitLine != null)
+                {
+                    orbitLine.enabled = false;
+                }
+
+                DeactivateAxisLines();
+
+                if (spinDirectionLine != null)
+                {
+                    spinDirectionLine.enabled = false;
+                }
+
+                return;
+            }
+
+            if (ShouldUpdateLineDistanceScale())
+            {
+                bool _axisScaleChanged = UpdateAxisLineDistanceScale();
+                bool _orbitScaleChanged = UpdateOrbitLineDistanceScale();
+                if (_axisScaleChanged || _orbitScaleChanged)
+                {
+                    lineStylesDirty = true;
+                }
             }
 
             if (_drawOrbit)
@@ -53,6 +73,50 @@ namespace Assets.Scripts.Runtime
             {
                 lineStylesDirty = false;
             }
+        }
+
+        /// <summary>
+        /// Decide whether line distance scaling should update this frame.
+        /// </summary>
+        private bool ShouldUpdateLineDistanceScale()
+        {
+            bool _intervalEnabled = lineScaleUpdateIntervalSeconds > 0f;
+            bool _thresholdEnabled = lineScaleDistanceThreshold > 0f;
+
+            if (!_intervalEnabled && !_thresholdEnabled)
+            {
+                return true;
+            }
+
+            if (_intervalEnabled)
+            {
+                lineScaleUpdateTimer += Time.deltaTime;
+                if (lineScaleUpdateTimer < lineScaleUpdateIntervalSeconds && !lineStylesDirty)
+                {
+                    return false;
+                }
+            }
+
+            if (_thresholdEnabled)
+            {
+                Camera? _camera = GetLineScaleCamera();
+                if (_camera != null)
+                {
+                    float _distance = Vector3.Distance(_camera.transform.position, transform.position);
+                    float _threshold = Mathf.Max(0.0f, lineScaleDistanceThreshold);
+                    if (lastLineScaleCameraDistance >= 0.0f &&
+                        Mathf.Abs(_distance - lastLineScaleCameraDistance) < _threshold &&
+                        !lineStylesDirty)
+                    {
+                        return false;
+                    }
+
+                    lastLineScaleCameraDistance = _distance;
+                }
+            }
+
+            lineScaleUpdateTimer = 0f;
+            return true;
         }
 
         /// <summary>
@@ -148,6 +212,8 @@ namespace Assets.Scripts.Runtime
             {
                 _color = dwarfOrbitLineColor;
             }
+
+            _color.a = GetOrbitLineAlpha();
 
             if (orbitLine.startColor != _color || orbitLine.endColor != _color)
             {
@@ -290,6 +356,7 @@ namespace Assets.Scripts.Runtime
             spinDirectionLine.SetPosition(_arcCount + 2, _endPoint + _arrowRight * _arrowLen);
 
             Color _color = spinDirection >= 0.0f ? spinDirectionProgradeColor : spinDirectionRetrogradeColor;
+            _color.a = GetAxisLineAlpha();
             if (spinDirectionLine.startColor != _color || spinDirectionLine.endColor != _color)
             {
                 spinDirectionLine.startColor = _color;
@@ -487,7 +554,47 @@ namespace Assets.Scripts.Runtime
                 _applied = true;
             }
 
+            if (ApplyAxisLineColors())
+            {
+                _applied = true;
+            }
+
             return _applied;
+        }
+
+        /// <summary>
+        /// Apply axis and world-up line colors with distance-based alpha.
+        /// </summary>
+        private bool ApplyAxisLineColors()
+        {
+            bool _updated = false;
+            float _alpha = GetAxisLineAlpha();
+
+            if (axisLine != null)
+            {
+                Color _color = axisLineColor;
+                _color.a = _alpha;
+                if (axisLine.startColor != _color || axisLine.endColor != _color)
+                {
+                    axisLine.startColor = _color;
+                    axisLine.endColor = _color;
+                    _updated = true;
+                }
+            }
+
+            if (worldUpLine != null)
+            {
+                Color _color = worldUpLineColor;
+                _color.a = _alpha;
+                if (worldUpLine.startColor != _color || worldUpLine.endColor != _color)
+                {
+                    worldUpLine.startColor = _color;
+                    worldUpLine.endColor = _color;
+                    _updated = true;
+                }
+            }
+
+            return _updated;
         }
 
         /// <summary>
@@ -506,6 +613,53 @@ namespace Assets.Scripts.Runtime
 
             float _base = Mathf.Clamp(_avg, 0.2f, 2.0f);
             return _base * Mathf.Clamp(visualContext.RuntimeLineWidthScale, 0.1f, 2.0f);
+        }
+
+        /// <summary>
+        /// Compute a distance-based alpha between the configured near/far values.
+        /// </summary>
+        private float GetLineAlphaForScale(float _scale, float _minScale, float _maxScale)
+        {
+            float _minAlpha = Mathf.Clamp01(lineAlphaNear / 255.0f);
+            float _maxAlpha = Mathf.Clamp01(lineAlphaFar / 255.0f);
+            if (_maxAlpha < _minAlpha)
+            {
+                float _temp = _minAlpha;
+                _minAlpha = _maxAlpha;
+                _maxAlpha = _temp;
+            }
+
+            float _min = Mathf.Min(_minScale, _maxScale);
+            float _max = Mathf.Max(_minScale, _maxScale);
+            if (Mathf.Approximately(_min, _max))
+            {
+                return _maxAlpha;
+            }
+
+            float _t = Mathf.InverseLerp(_min, _max, _scale);
+            return Mathf.Lerp(_minAlpha, _maxAlpha, _t);
+        }
+
+        /// <summary>
+        /// Resolve axis/world-up alpha based on camera distance.
+        /// </summary>
+        private float GetAxisLineAlpha()
+        {
+            return GetLineAlphaForScale(axisLineDistanceScale, axisLineDistanceMinScale, axisLineDistanceMaxScale);
+        }
+
+        /// <summary>
+        /// Resolve orbit alpha based on camera distance.
+        /// </summary>
+        private float GetOrbitLineAlpha()
+        {
+            float _maxScale = orbitLineDistanceMaxScale * Mathf.Max(0.1f, orbitLineDistanceMaxScaleBoost);
+            if (isHypothetical)
+            {
+                _maxScale = Mathf.Max(_maxScale, hypotheticalOrbitFarScale);
+            }
+
+            return GetLineAlphaForScale(orbitLineDistanceScale, orbitLineDistanceMinScale, _maxScale);
         }
 
         /// <summary>

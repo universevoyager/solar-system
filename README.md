@@ -1,4 +1,4 @@
-# Solar System Unity Web Simulator
+# Solar System Simulation
 A lightweight, open-source Solar System visualization built in **Unity (URP)** targeting **WebGL**.
 
 This project focuses on:
@@ -10,31 +10,24 @@ This project focuses on:
 
 ---
 
-## Status
-**Prototype / in progress.**  
-Features, assets, and structure may change.
-
----
-
-## Tech
+## Technical Overview
 - **Engine:** Unity **6000.3+**
 - **Render Pipeline:** **URP**
-- **Target:** WebGL (desktop browsers)
-- **WebGL:** WebGL 2.0 minimum
+- **Target:** WebGL 2.0 (desktop browsers)
 - **JSON:** Newtonsoft JSON (`com.unity.nuget.newtonsoft-json`)
-- **Camera:** Cinemachine (`com.unity.cinemachine`)
+- **Camera:** Custom runtime rig
 
 ---
 
-## Key Concepts
-### Truth vs Visual
+## Simulation Model
+### Data vs Visual
 The simulator uses a **real-data baseline** (radius, rotation period, orbit period, semi-major axis, etc.) and then applies **visual multipliers** per solar object:
 
 - `visual_defaults.radius_multiplier` (per-object size boost/suppression)
 - `visual_defaults.distance_multiplier` (per-object orbit-distance boost/suppression)
 - global multipliers in JSON: `global_visual_defaults`
 
-This keeps proportions “educationally realistic” while staying visually readable in a single scene.
+This keeps proportions educationally realistic while staying readable in a single scene.
 
 ### Time Scaling (Simulation Speed)
 Simulation time advances by:
@@ -105,19 +98,12 @@ Only `keplerian` is supported. The model uses basic Keplerian elements (good for
   - `true` to align to the primary’s axial tilt (equatorial plane)
   - `false` to keep the dataset plane (ecliptic/J2000)
 
----
-
-## Project Structure
-High-level:
+## Project Layout
 - `Assets/Resources/SolarSystemData_J2000_Keplerian_all_moons.json` — keplerian dataset (truth + visual defaults)
 - `Assets/Resources/SolarObjects/` — prefabs loaded at runtime
-  - Prefab names should match JSON `id` (recommended)
-  - `Template.prefab` is used as a fallback when an id-matching prefab is missing
-
-Scripts (namespaces follow folder structure, e.g. `Assets.Scripts.Runtime`):
-- `SolarSystemSimulator` — scene entry point that loads JSON, loads prefabs, spawns objects, advances simulation time
-- `SolarObject` — per-object behavior: orbit position, spin, and runtime line renderers
-- `SolarSystemJsonLoader` — loads/validates JSON from `Resources`
+- `SolarSystemSimulator` — scene entry point, loading + spawning + time
+- `SolarObject` — per-object orbit, spin, and runtime lines
+- `SolarSystemJsonLoader` — JSON load and validation
 
 ---
 
@@ -210,29 +196,23 @@ The JSON dataset stays the same, only the visualization scaling changes
 
 ---
 
-## Cinemachine Camera Controls
-This project uses Cinemachine cameras and a runtime GUI grid to focus on solar objects.
+## Camera Controls
+The camera is a custom runtime rig. A GUI grid is used to focus on solar objects.
 
 Required scene objects (names must match):
-- Focus vcam: `Follow-SolarObject-VCinemachine`
-- Overview vcam: `Overview-SolarSystem-VCinemachine`
 - Grid layout: `SolarObjects_View_Interaction_GridLayoutGroup`
-- Focus button template (inactive): `Focus_SolarObject_VCinemachine_Button`
-- Overview button: `View_SolarSystem_Overview_VCinemachine_Button`
+- Focus button template (inactive): `Focus_SolarObject_Button`
+- Overview button: `View_SolarSystem_Overview_Button`
 - Button TMP child name: `Text`
 
-Proxy targets (world-aligned, not parented):
-- `Focus_Proxy`
-- `Overview_Proxy`
-
 Add these components to the scene:
-- `SolarSystemCameraController` (camera logic)
+- `SolarSystemCamera` (camera logic)
 - `Gui_SolarObjectGrid` (builds focus buttons at runtime)
 
 Realism camera behavior:
 - As realism increases, overview zoom range and zoom speed increase
-- Focus zoom minimum increases to reduce clipping into bodies at full realism
-- Large-body padding used in Simulation fades out as realism approaches 1.00
+- Focus zoom ranges blend between Simulation and Realistic per `camera_focus_profile`
+- Use `camera_focus_profile` in JSON to control per-object focus ranges
 
 ---
 
@@ -289,6 +269,7 @@ To add a new object:
 1. Add a new entry under `solar_objects` in `SolarSystemData_J2000_Keplerian_all_moons.json`
 2. Set:
    - `id` (unique)
+   - `camera_focus_profile` (e.g., `terrestrial`, `gas_giant`, `ice_giant`, `moon`, `star`)
    - `primary_id` (e.g. `"sun"` or a planet id for moons)
    - `truth_physical.mean_radius_km`
    - `truth_spin` (rotation period + optional axial tilt)
@@ -300,6 +281,7 @@ To add a new object:
 {
   "id": "example_dwarf",
   "type": "dwarf_planet",
+  "camera_focus_profile": "dwarf_planet",
   "display_name": "Example Dwarf",
   "primary_id": "sun",
   "truth_physical": { "mean_radius_km": 600.0 },

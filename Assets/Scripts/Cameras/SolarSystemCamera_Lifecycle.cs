@@ -31,14 +31,24 @@ namespace Assets.Scripts.Cameras
 
         private void LateUpdate()
         {
-            UpdateProxyTransform(focusProxy, focusTarget, focusOrbitOffset, ref focusProxyVelocity);
-            UpdateProxyTransform(overviewProxy, overviewTarget, overviewOrbitOffset, ref overviewProxyVelocity);
-            UpdateCameraDistances();
-            UpdateOrbitOffsetsForDistances();
-
-            if (focusSwitchTimer > 0f)
+            if (!isInitialized || mainCamera == null)
             {
-                focusSwitchTimer = Mathf.Max(0f, focusSwitchTimer - Time.deltaTime);
+                return;
+            }
+
+            float _dt = Time.unscaledDeltaTime;
+            if (_dt <= 0f)
+            {
+                return;
+            }
+
+            if (isTransitioning)
+            {
+                UpdateTransition(_dt);
+            }
+            else
+            {
+                UpdateCameraMovement(_dt);
             }
         }
 

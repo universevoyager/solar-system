@@ -197,3 +197,13 @@ If you replace any asset, update this file accordingly.
   https://fonts.google.com/specimen/Orbitron
 - License file: `Assets/TextMesh Pro/Fonts/Orbitron/OFL.txt`
 - Note: The repository is MIT-licensed, but Orbitron font files are **not** covered by MIT, they remain licensed under OFL-1.1.
+
+### Oxanium
+- Name: Oxanium
+- Author: The Oxanium Project Authors
+- Copyright: Copyright 2019 The Oxanium Project Authors (https://github.com/sevmeyer/oxanium)
+- License: SIL Open Font License, Version 1.1 (OFL-1.1)
+- Source: Google Fonts — Oxanium
+  https://fonts.google.com/specimen/Oxanium
+- License file: `Assets/TextMesh Pro/Fonts/Oxanium/OFL.txt`
+- Note: The repository is MIT-licensed, but Oxanium font files are **not** covered by MIT, they remain licensed under OFL-1.1.

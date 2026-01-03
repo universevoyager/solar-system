@@ -48,12 +48,12 @@ namespace Assets.Scripts.Guis
         [Header("Hold Repeat")]
         [Tooltip("Allow press-and-hold repeat for buttons. Example: true")]
         [SerializeField] private bool enableHoldRepeat = true;
-        [Tooltip("Seconds before repeat starts. Higher = longer delay, lower = faster repeat start. Example: 0.35")]
+        [Tooltip("Seconds before repeat starts. Higher = longer delay, lower = faster repeat start. Example: 0.4")]
         [Range(0.05f, 2f)]
-        [SerializeField] private float holdRepeatInitialDelay = 0.35f;
-        [Tooltip("Seconds between repeats while held. Lower = faster repeats, higher = slower. Example: 0.08")]
+        [SerializeField] private float holdRepeatInitialDelay = 0.4f;
+        [Tooltip("Seconds between repeats while held. Lower = faster repeats, higher = slower. Example: 0.1")]
         [Range(0.02f, 0.5f)]
-        [SerializeField] private float holdRepeatInterval = 0.08f;
+        [SerializeField] private float holdRepeatInterval = 0.1f;
         #endregion
 
         #region Runtime State

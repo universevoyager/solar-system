@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using Assets.Scripts.Data;
+using Assets.Scripts.Helpers.Debugging;
 using UnityEngine;
 
 namespace Assets.Scripts.Runtime
@@ -26,16 +28,16 @@ namespace Assets.Scripts.Runtime
         /// </summary>
         private static Camera? GetLineScaleCamera()
         {
+            if (lineScaleCamera != null && lineScaleCamera.enabled)
+            {
+                return lineScaleCamera;
+            }
+
             Camera _camera = Camera.main;
             if (_camera != null)
             {
                 lineScaleCamera = _camera;
                 return _camera;
-            }
-
-            if (lineScaleCamera != null && lineScaleCamera.enabled)
-            {
-                return lineScaleCamera;
             }
 
             Camera[] _all = Resources.FindObjectsOfTypeAll<Camera>();
@@ -79,6 +81,59 @@ namespace Assets.Scripts.Runtime
             }
 
             return _E;
+        }
+
+        private CameraFocusProfile ResolveCameraFocusProfile(SolarObjectData _data)
+        {
+            string _raw = _data.CameraFocusProfile ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(_raw))
+            {
+                HelpLogs.Error("SolarObject", $"'{_data.Id}' missing camera_focus_profile.");
+                return CameraFocusProfile.Auto;
+            }
+
+            if (TryParseCameraFocusProfile(_raw, out CameraFocusProfile _profile))
+            {
+                return _profile;
+            }
+
+            HelpLogs.Error("SolarObject", $"'{_data.Id}' has invalid camera_focus_profile '{_raw}'.");
+            return CameraFocusProfile.Auto;
+        }
+
+        private static bool TryParseCameraFocusProfile(string _value, out CameraFocusProfile _profile)
+        {
+            _profile = CameraFocusProfile.Auto;
+            string _normalized = _value.Trim().Replace("-", "_").ToLowerInvariant();
+            switch (_normalized)
+            {
+                case "auto":
+                    _profile = CameraFocusProfile.Auto;
+                    return true;
+                case "moon":
+                    _profile = CameraFocusProfile.Moon;
+                    return true;
+                case "dwarf_planet":
+                case "dwarfplanet":
+                    _profile = CameraFocusProfile.DwarfPlanet;
+                    return true;
+                case "terrestrial":
+                    _profile = CameraFocusProfile.Terrestrial;
+                    return true;
+                case "gas_giant":
+                case "gasgiant":
+                    _profile = CameraFocusProfile.GasGiant;
+                    return true;
+                case "ice_giant":
+                case "icegiant":
+                    _profile = CameraFocusProfile.IceGiant;
+                    return true;
+                case "star":
+                    _profile = CameraFocusProfile.Star;
+                    return true;
+                default:
+                    return false;
+            }
         }
         #endregion
     }

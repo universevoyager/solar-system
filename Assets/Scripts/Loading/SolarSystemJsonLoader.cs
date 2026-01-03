@@ -165,9 +165,47 @@ namespace Assets.Scripts.Loading
                         return null;
                     }
                 }
+
+                string _focusProfile = _o.CameraFocusProfile ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(_focusProfile))
+                {
+                    HelpLogs.Error("JsonLoader", $"'{_o.Id}' missing camera_focus_profile.");
+                    return null;
+                }
+
+                if (!IsValidCameraFocusProfile(_focusProfile))
+                {
+                    HelpLogs.Error(
+                        "JsonLoader",
+                        $"'{_o.Id}' invalid camera_focus_profile '{_focusProfile}'."
+                    );
+                    return null;
+                }
             }
 
             return _result;
+        }
+        #endregion
+
+        #region Validation Helpers
+        private static bool IsValidCameraFocusProfile(string _value)
+        {
+            string _normalized = _value.Trim().Replace("-", "_").ToLowerInvariant();
+            switch (_normalized)
+            {
+                case "moon":
+                case "dwarf_planet":
+                case "dwarfplanet":
+                case "terrestrial":
+                case "gas_giant":
+                case "gasgiant":
+                case "ice_giant":
+                case "icegiant":
+                case "star":
+                    return true;
+                default:
+                    return false;
+            }
         }
         #endregion
     }

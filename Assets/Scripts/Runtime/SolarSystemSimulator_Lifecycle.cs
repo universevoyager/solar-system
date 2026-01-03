@@ -113,9 +113,10 @@ namespace Assets.Scripts.Runtime
             // Advance simulation clock and update solar objects.
             simulationTimeSeconds += Time.deltaTime * timeScale;
 
-            foreach (KeyValuePair<string, SolarObject> _pair in solarObjectsById)
+            for (int _i = 0; _i < solarObjectsOrdered.Count; _i++)
             {
-                _pair.Value.Simulate(simulationTimeSeconds);
+                SolarObject _object = solarObjectsOrdered[_i];
+                _object.Simulate(simulationTimeSeconds);
             }
 
             if (enableRuntimeControls && runtimeControlsInitialized)

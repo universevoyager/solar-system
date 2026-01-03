@@ -19,6 +19,10 @@ namespace Assets.Scripts.Data
         [JsonProperty("type")]
         public string Type { get; set; } = string.Empty;
 
+        // Camera focus profile (e.g., terrestrial, gas_giant, ice_giant, moon, star).
+        [JsonProperty("camera_focus_profile")]
+        public string? CameraFocusProfile { get; set; }
+
         // Optional display name shown in the scene.
         [JsonProperty("display_name")]
         public string? DisplayName { get; set; }

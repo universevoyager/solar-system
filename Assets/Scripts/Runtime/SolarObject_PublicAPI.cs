@@ -30,6 +30,7 @@ namespace Assets.Scripts.Runtime
             orderFromSun = _data.OrderFromSun ?? -1;
             alignOrbitToPrimaryTilt = _data.AlignOrbitToPrimaryTilt;
             tidalLockOverride = _data.TidalLock;
+            cameraFocusProfile = ResolveCameraFocusProfile(_data);
 
             name = string.IsNullOrWhiteSpace(_data.DisplayName) ? _data.Id : _data.DisplayName;
 

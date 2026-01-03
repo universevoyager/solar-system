@@ -5,31 +5,31 @@ using Assets.Scripts.Helpers.Debugging;
 using UnityEditor;
 using UnityEngine;
 
-public static class AutoDateVersion
+public static class AutoUpdateVersion
 {
-    const string Format = "yyyy.MM.dd";
+    // Month/day without leading zeros
+    const string Format = "yyyy.M.d";
 
     [InitializeOnLoadMethod]
     static void Init()
     {
-        // Avoid AssetDatabase ops during InitializeOnLoad* (because optimizations, even in da editor yeeeahhh)
-        // run once after editor finishes loading.
+        // Avoid AssetDatabase ops during InitializeOnLoad*
         EditorApplication.delayCall += UpdateIfNeeded;
     }
 
     static void UpdateIfNeeded()
     {
-        DateTime today = DateTime.Today;
+        DateTime _nowPresentDate = DateTime.Today;
 
-        string current = PlayerSettings.bundleVersion?.Trim();
-        if (!DateTime.TryParseExact(current, Format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var currentDate))
+        string _current = PlayerSettings.bundleVersion?.Trim();
+        if (!DateTime.TryParseExact(_current, Format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var _out_currentDate))
         {
-            currentDate = DateTime.MinValue;
+            _out_currentDate = DateTime.MinValue;
         }
 
-        if (today > currentDate)
+        if (_nowPresentDate > _out_currentDate)
         {
-            PlayerSettings.bundleVersion = today.ToString(Format, CultureInfo.InvariantCulture);
+            PlayerSettings.bundleVersion = _nowPresentDate.ToString(Format, CultureInfo.InvariantCulture);
             AssetDatabase.SaveAssets();
             HelpLogs.Log("[Auto Version]", $"Updated product version to {Application.version}");
         }

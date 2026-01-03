@@ -53,6 +53,7 @@ namespace Assets.Scripts.Runtime
             public double SimulationMoonOrbitDistanceScale = 1.0;
             public bool AlignMoonOrbitsToPrimaryAxialTilt = true;
         }
+
         #endregion
 
         #region Serialized Fields
@@ -65,6 +66,12 @@ namespace Assets.Scripts.Runtime
         [SerializeField] private bool showWorldUpLinesLocal = true;
         [Tooltip("Enable spin direction arc rendering for this object. Example: true. When false, spin direction arcs are hidden")]
         [SerializeField] private bool showSpinDirectionLinesLocal = true;
+        [Tooltip("Line distance scaling update interval in seconds. 0 = every frame. Example: 0.1 (recommended)")]
+        [Range(0f, 1f)]
+        [SerializeField] private float lineScaleUpdateIntervalSeconds = 0.1f;
+        [Tooltip("Camera distance delta required to refresh line scaling. 0 = always update. Example: 0.25 (recommended)")]
+        [Range(0f, 10f)]
+        [SerializeField] private float lineScaleDistanceThreshold = 0.25f;
         [Tooltip("Base orbit line width before scaling. Higher = thicker orbits, lower = thinner. Example: 0.06")]
         [Range(0.001f, 0.5f)]
         [SerializeField] private float orbitLineWidth = 0.06f;
@@ -90,6 +97,14 @@ namespace Assets.Scripts.Runtime
         [SerializeField] private Color spinDirectionProgradeColor = new Color(0.2f, 1.0f, 0.4f, 0.9f);
         [Tooltip("Spin direction line color for retrograde. Example: (1, 0.3, 0.2, 0.9)")]
         [SerializeField] private Color spinDirectionRetrogradeColor = new Color(1.0f, 0.3f, 0.2f, 0.9f);
+
+        [Header("Line Transparency")]
+        [Tooltip("Minimum line alpha when close to the camera. Lower = more transparent. Example: 75")]
+        [Range(0f, 255f)]
+        [SerializeField] private float lineAlphaNear = 75.0f;
+        [Tooltip("Maximum line alpha when far from the camera. Higher = more opaque. Example: 110")]
+        [Range(0f, 255f)]
+        [SerializeField] private float lineAlphaFar = 110.0f;
 
         [Header("Spin Direction Arc")]
         [Tooltip("Arc radius multiplier relative to body radius. Higher = arc farther from body. Example: 1.1")]
@@ -227,6 +242,7 @@ namespace Assets.Scripts.Runtime
         // Cached references.
         private Transform? primaryTransform;
         private VisualContext? visualContext;
+        private CameraFocusProfile cameraFocusProfile = CameraFocusProfile.Auto;
 
         // Physical and visual scale.
         private double radiusKm = 1.0;
@@ -270,6 +286,8 @@ namespace Assets.Scripts.Runtime
         private static Material? lineMaterial;
         private static Camera? lineScaleCamera;
         private bool lineStylesDirty = true;
+        private float lineScaleUpdateTimer = 0.0f;
+        private float lastLineScaleCameraDistance = -1.0f;
         private float axisLineDistanceScale = 1.0f;
         private float orbitLineDistanceScale = 1.0f;
         #endregion
@@ -289,6 +307,21 @@ namespace Assets.Scripts.Runtime
         /// True when the object is a moon.
         /// </summary>
         public bool IsMoon => string.Equals(type, "moon", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// True when the object is a dwarf planet.
+        /// </summary>
+        public bool IsDwarfPlanet => string.Equals(type, "dwarf_planet", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// True when the object is a planet.
+        /// </summary>
+        public bool IsPlanet => string.Equals(type, "planet", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// True when the object is a star.
+        /// </summary>
+        public bool IsStar => string.Equals(type, "star", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// True when the object is marked as hypothetical in the dataset.
@@ -314,6 +347,11 @@ namespace Assets.Scripts.Runtime
         /// Sprite used for UI avatar buttons.
         /// </summary>
         public Sprite? AvatarSprite => avatarSprite;
+
+        /// <summary>
+        /// Camera zoom profile for focus navigation.
+        /// </summary>
+        public CameraFocusProfile FocusProfile => cameraFocusProfile;
 
         /// <summary>
         /// Diameter normalized to ignore the global radius multiplier.
